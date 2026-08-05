@@ -53,6 +53,12 @@ export default function AboutView() {
           <a href="https://soroban.stellar.org" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
             Soroban Docs
           </a>
+          <a href="https://freighter.app" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+            Freighter Wallet
+          </a>
+          <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+            Open-Meteo Weather API
+          </a>
         </div>
       </div>
     </div>
