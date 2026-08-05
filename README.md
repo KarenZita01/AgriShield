@@ -293,15 +293,13 @@ npm start
 
 ## 📸 Screenshots
 
-> **Note:** Screenshots will be captured from the live deployment.
+| Dashboard (Mobile) | Dashboard (Desktop) | Farmer View |
+|--------------------|---------------------|-------------|
+| ![Dashboard Mobile](docs/screenshots/dashboard-mobile.png) | ![Dashboard Desktop](docs/screenshots/dashboard-desktop.png) | ![Farmer](docs/screenshots/farmer.png) |
 
-| Dashboard | Farmer View | Investor View |
-|-----------|-------------|---------------|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Farmer](docs/screenshots/farmer.png) | ![Investor](docs/screenshots/investor.png) |
-
-| Weather Card | Feedback Form | About Page |
-|--------------|---------------|------------|
-| ![Weather](docs/screenshots/weather.png) | ![Feedback](docs/screenshots/feedback.png) | ![About](docs/screenshots/about.png) |
+| Investor View | Weather Card | Feedback Form | About Page |
+|---------------|--------------|---------------|------------|
+| ![Investor](docs/screenshots/investor.png) | ![Weather](docs/screenshots/weather.png) | ![Feedback](docs/screenshots/feedback.png) | ![About](docs/screenshots/about.png) |
 
 ---
 
