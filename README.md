@@ -11,10 +11,10 @@
 ## 📋 Table of Contents
 
 - [Overview](#overview)
-- [How It Works](#how-it-works)
 - [Architecture](#architecture)
+- [How It Works](#how-it-works)
 - [Live Deployments](#live-deployments)
-- [Smart Contracts](#smart-contracts)
+- [Smart Contracts (Backend)](#smart-contracts-backend)
 - [Frontend](#frontend)
 - [Oracle](#oracle)
 - [Screenshots](#screenshots)
@@ -43,6 +43,50 @@ AgriShield is a **parametric micro-insurance** platform that protects smallholde
 - **Dual-oracle model**: Two independent oracles must agree, preventing manipulation
 - **Instant payouts**: Smart contracts automatically disburse funds when conditions are met
 - **Low premiums**: 1 mUSD premium for 50 mUSD coverage (50x leverage)
+
+---
+
+## 🏗 Architecture
+
+AgriShield uses a **decentralized architecture** — there is no traditional backend server. Instead, the blockchain itself serves as the backend:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        AGRIARCHITECTURE                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────────┐   │
+│  │   FRONTEND   │   │    BACKEND   │   │     ORACLE       │   │
+│  │  (React +    │   │  (Stellar    │   │   (Node.js)      │   │
+│  │   Vite)      │   │  Blockchain) │   │                  │   │
+│  │              │   │              │   │  - Open-Meteo    │   │
+│  │  - Dashboard │   │  - Pool      │   │  - Dual oracle   │   │
+│  │  - Farmer    │◀──│    Contract  │◀──│  - Weather data  │   │
+│  │  - Investor  │   │  - Token     │   │                  │   │
+│  │  - Feedback  │   │    Contract  │   │                  │   │
+│  │              │   │  - State     │   │                  │   │
+│  └──────────────┘   │  - Payouts   │   └──────────────────┘   │
+│                     └──────────────┘                            │
+│                            ▲                                    │
+│                            │                                    │
+│                     Freighter Wallet                            │
+│                     (Signs transactions)                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+| Component | Technology | Where It Runs | Role |
+|-----------|-----------|---------------|------|
+| **Frontend** | React + TypeScript + Vite | Vercel (static hosting) | User interface |
+| **Backend** | Soroban Smart Contracts (Rust) | Stellar Blockchain | State, logic, payouts |
+| **Oracle** | Node.js daemon | Any server/VPS | Feeds weather data |
+| **Wallet** | Freighter Browser Extension | User's browser | Signs transactions |
+
+### Why No Traditional Backend?
+
+- **Smart contracts are the backend** — they store all state (farmers, liquidity, readings) on-chain
+- **No server to maintain** — the blockchain handles persistence and execution
+- **Trustless** — users verify state directly on-chain via Stellar Expert
+- **Censorship-resistant** — no single entity controls the backend
 
 ---
 
@@ -89,9 +133,20 @@ AgriShield is a **parametric micro-insurance** platform that protects smallholde
 
 ---
 
-## 🏗 Architecture
+## 🚀 Live Deployments
 
-### Smart Contracts (Soroban/Rust)
+| Component | URL | Status |
+|-----------|-----|--------|
+| **Frontend** | [https://frontend-gilt-eight-21.vercel.app](https://frontend-gilt-eight-21.vercel.app) | ✅ Live |
+| **Pool Contract** | [Stellar Expert](https://stellar-expert.com/testnet/contract/CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G) | ✅ Deployed |
+| **Token Contract** | [Stellar Expert](https://stellar-expert.com/testnet/contract/CCXCW2SCJB4E6FOKAP6MTASQE4CL2QOYHWUILTYIE6JQRMY7KALKURWU) | ✅ Deployed |
+| **GitHub** | [https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool](https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool) | ✅ Public |
+
+---
+
+## 📜 Smart Contracts (Backend)
+
+### Insurance Pool Contract
 
 | Contract | Address | Description |
 |----------|---------|-------------|
@@ -105,40 +160,7 @@ AgriShield is a **parametric micro-insurance** platform that protects smallholde
 - 28 typed error codes for precise error handling
 - 7 emitted events for off-chain monitoring
 
-### Frontend (React + TypeScript + Vite)
-
-- Mobile-first responsive design
-- Freighter wallet integration
-- 6 views: Dashboard, Farmer, Investor, Feedback, Settings, About
-- Real-time weather data from Open-Meteo API
-- Dark mode support
-- Toast notifications for user feedback
-
-### Oracle (Node.js)
-
-- Dual-oracle model (oracle-a + oracle-b)
-- Open-Meteo weather API for rainfall data
-- Retry logic with exponential backoff
-- 9 passing unit tests
-
----
-
-## 🚀 Live Deployments
-
-| Component | URL | Status |
-|-----------|-----|--------|
-| **Frontend** | [https://frontend-gilt-eight-21.vercel.app](https://frontend-gilt-eight-21.vercel.app) | ✅ Live |
-| **Pool Contract** | [Stellar Expert](https://stellar-expert.com/testnet/contract/CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G) | ✅ Deployed |
-| **Token Contract** | [Stellar Expert](https://stellar-expert.com/testnet/contract/CCXCW2SCJB4E6FOKAP6MTASQE4CL2QOYHWUILTYIE6JQRMY7KALKURWU) | ✅ Deployed |
-| **GitHub** | [https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool](https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool) | ✅ Public |
-
----
-
-## 📜 Smart Contracts
-
-### Insurance Pool Contract
-
-**Functions:**
+**Write Functions:**
 
 | Function | Auth | Description |
 |----------|------|-------------|
@@ -212,11 +234,9 @@ Standard SEP-41-compatible token with: `initialize`, `name`, `symbol`, `decimals
 
 ## 🎬 Demo Video
 
-A video walkthrough of AgriShield is available at:
+> **Status:** Demo video script is ready. Recording pending.
 
-**[📺 Watch Demo Video](https://youtu.be/YOUR_VIDEO_ID)**
-
-### Demo Script
+📄 **[View Demo Script](docs/DEMO_VIDEO_SCRIPT.md)**
 
 The video covers:
 1. **0:00** — Introduction and problem statement
@@ -258,11 +278,11 @@ The video covers:
 
 ## 📝 User Feedback
 
-### Google Form
+### How to Create the Google Form
 
-**[📋 Fill out the Feedback Form](https://forms.gle/YOUR_GOOGLE_FORM_ID)**
+📄 **[View Setup Guide](docs/FEEDBACK_FORM_SETUP.md)**
 
-The form collects:
+The form should collect:
 - Name, Email, Wallet Address
 - Network (Testnet/Mainnet)
 - Product Rating (1-5)
@@ -272,8 +292,7 @@ The form collects:
 
 ### Feedback Export
 
-Feedback responses are exported to Excel and available at:
-- **[📊 Download Feedback (Excel)](docs/user_feedback.xlsx)**
+> **Note:** After creating the Google Form, export responses to Excel and save as `docs/user_feedback.xlsx`
 
 ---
 
@@ -357,44 +376,35 @@ node --test src/*.test.js
 
 ```
 Parametric-Micro-Insurance-Pool/
-├── contracts/
+├── contracts/                    # Smart Contracts (Backend)
 │   ├── insurance-pool/
 │   │   └── src/
-│   │       ├── lib.rs          # Main contract (pool lifecycle, oracles, payouts)
-│   │       ├── storage.rs      # Data types and storage helpers
-│   │       └── test.rs         # 20+ contract tests
+│   │       ├── lib.rs           # Main contract logic
+│   │       ├── storage.rs       # Data types & storage
+│   │       └── test.rs          # 20+ contract tests
 │   └── micro-usd/
 │       └── src/
-│           ├── lib.rs          # SEP-41 token contract
-│           └── test.rs         # Token tests
-├── frontend/
+│           ├── lib.rs           # SEP-41 token
+│           └── test.rs          # Token tests
+├── frontend/                    # Frontend (React)
 │   ├── src/
-│   │   ├── App.tsx             # Main app with tab navigation
-│   │   ├── config.ts           # Runtime configuration
-│   │   ├── index.css           # Mobile-first design system
-│   │   ├── components/         # Reusable UI components
-│   │   ├── hooks/              # React hooks (wallet, pool, toasts)
-│   │   ├── lib/                # Utility functions
-│   │   └── views/              # Page views (Dashboard, Farmer, etc.)
+│   │   ├── App.tsx              # Main app
+│   │   ├── config.ts            # Configuration
+│   │   ├── index.css            # Design system
+│   │   ├── components/          # Reusable UI
+│   │   ├── hooks/               # React hooks
+│   │   └── views/               # Page views
 │   └── package.json
-├── oracle/
+├── oracle/                      # Oracle Service
 │   ├── src/
-│   │   ├── index.js            # Oracle daemon
-│   │   ├── config.js           # Environment config
-│   │   ├── weather.js          # Open-Meteo API client
-│   │   ├── lib.js              # Reading ID, scaling, agreement
-│   │   └── lib.test.js         # 9 oracle tests
+│   │   ├── index.js             # Main daemon
+│   │   ├── config.js            # Config
+│   │   ├── weather.js           # Open-Meteo API
+│   │   ├── lib.js               # Utilities
+│   │   └── lib.test.js          # 9 tests
 │   └── package.json
-├── scripts/
-│   ├── build-contracts.sh      # Build WASM contracts
-│   ├── test-contracts.sh       # Run contract tests
-│   └── test-oracle.sh          # Run oracle tests
-├── docs/
-│   ├── ARCHITECTURE.md         # System architecture
-│   ├── DEPLOYMENT.md           # Deployment runbook
-│   ├── SUBMISSION_CHECKLIST.md # Level 4 requirements
-│   ├── FEEDBACK_FORM_SETUP.md  # Google Form guide
-│   └── user-wallet-interactions.md  # Onboarding proof
+├── scripts/                     # Build scripts
+├── docs/                        # Documentation
 └── README.md
 ```
 
