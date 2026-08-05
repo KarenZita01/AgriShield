@@ -305,21 +305,9 @@ npm start
 
 ## 🎬 Demo Video
 
-> **Status:** Demo video script is ready. Recording pending.
+🎬 **[Watch the Demo Video](https://youtube.com/shorts/XslewyLFuJY?si=T2q0XCDD-K7g9XDH)**
 
 📄 **[View Demo Script](docs/DEMO_VIDEO_SCRIPT.md)**
-
-The video covers:
-1. **0:00** — Introduction and problem statement
-2. **0:30** — Dashboard overview (pool status, solvency, weather)
-3. **1:00** — Connect Freighter wallet
-4. **1:30** — Farmer enrollment (pay 1 mUSD premium)
-5. **2:00** — Investor liquidity deposit
-6. **2:30** — Oracle weather reading submission
-7. **3:00** — Pool trigger simulation (rainfall ≤ 50mm)
-8. **3:30** — Farmer claims 50 mUSD payout
-9. **4:00** — Feedback form walkthrough
-10. **4:30** — Architecture and smart contract walkthrough
 
 ---
 
