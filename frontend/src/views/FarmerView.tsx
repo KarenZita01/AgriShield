@@ -64,6 +64,22 @@ export default function FarmerView({ pool, wallet }: FarmerProps) {
 
       <div className="card">
         <div className="card-header">
+          <span className="card-title">Weather Data</span>
+        </div>
+        <div className="stat-grid">
+          <div>
+            <div className="stat-label">Current Rainfall</div>
+            <div className="stat-value text-sm">— mm</div>
+          </div>
+          <div>
+            <div className="stat-label">Threshold</div>
+            <div className="stat-value text-sm">≤50mm</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
           <span className="card-title">Claim Payout</span>
         </div>
         <p className="text-sm text-muted mb-2">
