@@ -14,9 +14,9 @@
 - [Architecture](#architecture)
 - [How It Works](#how-it-works)
 - [Live Deployments](#live-deployments)
-- [Smart Contracts (Backend)](#smart-contracts-backend)
+- [Smart Contracts](#smart-contracts)
 - [Frontend](#frontend)
-- [Oracle](#oracle)
+- [Backend (Oracle)](#backend-oracle)
 - [Screenshots](#screenshots)
 - [Demo Video](#demo-video)
 - [User Onboarding](#user-onboarding)
@@ -144,7 +144,7 @@ AgriShield uses a **decentralized architecture** — there is no traditional bac
 
 ---
 
-## 📜 Smart Contracts (Backend)
+## 📜 Smart Contracts
 
 ### Insurance Pool Contract
 
@@ -215,6 +215,79 @@ Standard SEP-41-compatible token with: `initialize`, `name`, `symbol`, `decimals
 - CSS custom properties (no framework)
 - Mobile-first responsive design
 - Dark mode support
+
+---
+
+## ⚙️ Backend (Oracle)
+
+The backend consists of the **Oracle Service** — a Node.js daemon that feeds weather data to the smart contracts on Stellar.
+
+### What is the Oracle?
+
+The oracle is a off-chain service that:
+1. Fetches rainfall data from Open-Meteo API every hour
+2. Submits readings to the Insurance Pool contract on Stellar
+3. Two independent oracle instances (oracle-a + oracle-b) must agree
+4. If both oracles report rainfall ≤ 50mm, the pool auto-triggers
+
+### Oracle Architecture
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  Open-Meteo  │────▶│  Oracle A    │────▶│   Insurance  │
+│  Weather API │     │  (Node.js)   │     │   Pool       │
+│  (rainfall)  │     │              │     │   Contract   │
+└──────────────┘     └──────────────┘     └──────────────┘
+                           │                     ▲
+                           │    ┌──────────────┐ │
+                           └───▶│  Oracle B    │─┘
+                                │  (Node.js)   │
+                                └──────────────┘
+```
+
+### Oracle Files
+
+| File | Description |
+|------|-------------|
+| `oracle/src/index.js` | Main daemon — polls weather, submits readings |
+| `oracle/src/config.js` | Environment configuration |
+| `oracle/src/weather.js` | Open-Meteo API client with retry logic |
+| `oracle/src/lib.js` | Utilities: reading ID derivation, scaling, agreement |
+| `oracle/src/lib.test.js` | 9 unit tests |
+| `oracle/package.json` | Node.js dependencies |
+
+### Oracle Configuration (.env)
+
+```bash
+RPC_URL=https://soroban-testnet.stellar.org
+NETWORK_PASSPHRASE=Test SDF Future Network ; October 2022
+POOL_CONTRACT_ID=CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G
+TOKEN_CONTRACT_ID=CCXCW2SCJB4E6FOKAP6MTASQE4CL2QOYHWUILTYIE6JQRMY7KALKURWU
+ORACLE_SECRET_KEY=S...  # Secret key for oracle signing
+LATITUDE=10.495
+LONGITUDE=7.527
+POLL_INTERVAL_MS=3600000  # 1 hour
+THRESHOLD=50              # Rainfall threshold in mm
+TOLERANCE=10              # Oracle agreement tolerance in mm
+```
+
+### Running the Oracle
+
+```bash
+cd oracle
+npm install
+cp .env.example .env
+# Edit .env with your ORACLE_SECRET_KEY
+npm start
+```
+
+### Key Features
+
+- **Dual-oracle model**: Two independent oracles must agree within tolerance
+- **Retry logic**: Exponential backoff on API failures (3 retries)
+- **Weather data**: Open-Meteo API (free, no API key required)
+- **Scaled values**: Rainfall multiplied by 10,000,000 for precision
+- **Event logging**: All readings logged for off-chain monitoring
 
 ---
 
