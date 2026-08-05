@@ -502,10 +502,36 @@ Parametric-Micro-Insurance-Pool/
 
 ## 📊 Monitoring & Analytics
 
+### On-Chain Monitoring
 - **Pool State**: Monitored via Soroban RPC and Horizon API
 - **Weather Data**: Open-Meteo API (free, no API key required)
 - **Oracle Health**: Polling interval: 1 hour, retry logic with exponential backoff
 - **Transaction Logging**: All contract events emitted for off-chain indexing
+
+### Frontend Analytics (PostHog)
+- Page view tracking
+- Wallet connection events
+- Farmer enrollment tracking
+- Liquidity deposit tracking
+- Payout claim tracking
+- Feedback submission tracking
+
+**Setup:**
+```bash
+# Get free key at https://posthog.com
+VITE_POSTHOG_KEY=your_posthog_key
+```
+
+### Error Monitoring (Sentry)
+- JavaScript error capture
+- Unhandled promise rejection tracking
+- Error reporting with context
+
+**Setup:**
+```bash
+# Get DSN at https://sentry.io
+VITE_SENTRY_DSN=your_sentry_dsn
+```
 
 ---
 
