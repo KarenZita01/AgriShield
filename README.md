@@ -519,19 +519,12 @@ Parametric-Micro-Insurance-Pool/
 **Setup:**
 ```bash
 # Get free key at https://posthog.com
-VITE_POSTHOG_KEY=your_posthog_key
+VITE_POSTHOG_KEY=phc_v9Y3cwZm6kN4QvpATCqXM6jCVVitAdTsT8LYgJsuVN8o
 ```
 
-### Error Monitoring (Sentry)
-- JavaScript error capture
-- Unhandled promise rejection tracking
-- Error reporting with context
+> Analytics are live — all events are tracked in the PostHog dashboard.
 
-**Setup:**
-```bash
-# Get DSN at https://sentry.io
-VITE_SENTRY_DSN=your_sentry_dsn
-```
+> Error monitoring is handled through PostHog's built-in error tracking.
 
 ---
 
