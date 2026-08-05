@@ -130,6 +130,37 @@ export default function FeedbackView() {
           Submit Feedback
         </button>
       </form>
+
+      <div className="card">
+        <div className="card-header">
+          <span className="card-title">Previous Feedback</span>
+        </div>
+        {(() => {
+          const feedback = JSON.parse(localStorage.getItem('agrishield_feedback') || '[]')
+          if (feedback.length === 0) {
+            return <p className="text-sm text-muted text-center">No feedback submitted yet.</p>
+          }
+          return (
+            <div>
+              <p className="text-sm text-muted">{feedback.length} submission(s) recorded</p>
+              <button
+                className="btn btn-outline btn-sm mt-2"
+                onClick={() => {
+                  const data = JSON.stringify(feedback, null, 2)
+                  const blob = new Blob([data], { type: 'application/json' })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = 'agrishield_feedback.json'
+                  a.click()
+                }}
+              >
+                Export as JSON
+              </button>
+            </div>
+          )
+        })()}
+      </div>
     </div>
   )
 }
