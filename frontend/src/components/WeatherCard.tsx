@@ -62,24 +62,26 @@ export default function WeatherCard() {
         <span className="card-title">Weather — Kaduna</span>
         <span className="text-sm text-muted">Live</span>
       </div>
-      <div className="stat-grid">
-        <div>
-          <div className="stat-label">Temperature</div>
-          <div className="stat-value">{weather.temperature}°C</div>
+        <div className="stat-grid">
+          <div>
+            <div className="stat-label">Temperature</div>
+            <div className="stat-value">{weather.temperature}°C</div>
+          </div>
+          <div>
+            <div className="stat-label">Humidity</div>
+            <div className="stat-value">{weather.humidity}%</div>
+          </div>
+          <div>
+            <div className="stat-label">Rainfall</div>
+            <div className="stat-value">{weather.rainfall} mm</div>
+          </div>
+          <div>
+            <div className="stat-label">Status</div>
+            <div className={`stat-value ${weather.rainfall <= 50 ? 'text-danger' : ''}`}>
+              {weather.rainfall <= 50 ? '⚠️ Below' : '✅ Safe'}
+            </div>
+          </div>
         </div>
-        <div>
-          <div className="stat-label">Humidity</div>
-          <div className="stat-value">{weather.humidity}%</div>
-        </div>
-        <div>
-          <div className="stat-label">Rainfall</div>
-          <div className="stat-value">{weather.rainfall} mm</div>
-        </div>
-        <div>
-          <div className="stat-label">Threshold</div>
-          <div className="stat-value">≤50mm</div>
-        </div>
-      </div>
     </div>
   )
 }
