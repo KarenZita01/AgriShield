@@ -53,6 +53,16 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
 
       <div className="card">
         <div className="card-header">
+          <span className="card-title">Pool Metrics</span>
+        </div>
+        <div className="stat-grid">
+          <Stat label="Last Reading" value={`#${pool.lastReadingId}`} icon="📡" />
+          <Stat label="Payouts" value={`${formatAmount(pool.totalPayouts)} mUSD`} icon="💸" />
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
           <span className="card-title">Quick Actions</span>
         </div>
         {!wallet.connected ? (
