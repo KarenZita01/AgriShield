@@ -1,0 +1,12 @@
+{
+  "name": "agrishield-oracle",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test src/*.test.js"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^12.1.0"
+  }
+}
