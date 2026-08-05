@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { WalletProvider, useWallet } from './hooks/WalletProvider'
 import { usePool } from './hooks/usePool'
 import { useToasts, ToastProvider } from './hooks/useToasts'
+import { initAnalytics, initErrorMonitoring, trackPageView, trackEvent } from './lib/analytics'
 import DashboardView from './views/DashboardView'
 import FarmerView from './views/FarmerView'
 import InvestorView from './views/InvestorView'
@@ -25,6 +26,10 @@ function AppContent() {
     { id: 'about', label: 'About', icon: 'ℹ️' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
   ]
+
+  useEffect(() => {
+    trackPageView(tab)
+  }, [tab])
 
   return (
     <div className="app">
@@ -62,6 +67,11 @@ function AppContent() {
 }
 
 export default function App() {
+  useEffect(() => {
+    initAnalytics()
+    initErrorMonitoring()
+  }, [])
+
   return (
     <ToastProvider>
       <WalletProvider>
