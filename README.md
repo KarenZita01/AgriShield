@@ -351,11 +351,9 @@ The video covers:
 
 ## 📝 User Feedback
 
-### How to Create the Google Form
+📋 **[Fill out the Feedback Form](https://docs.google.com/forms/d/e/1FAIpQLSfyHzM2N_EJw_RZK3MV_Y5-gpjWJO6cUrlojzD0mcvLszX4Ig/viewform?usp=publish-editor)**
 
-📄 **[View Setup Guide](docs/FEEDBACK_FORM_SETUP.md)**
-
-The form should collect:
+The form collects:
 - Name, Email, Wallet Address
 - Network (Testnet/Mainnet)
 - Product Rating (1-5)
@@ -365,7 +363,7 @@ The form should collect:
 
 ### Feedback Export
 
-> **Note:** After creating the Google Form, export responses to Excel and save as `docs/user_feedback.xlsx`
+> **Note:** Responses are exported to Excel and saved as `docs/user_feedback.xlsx`
 
 ---
 
