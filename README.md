@@ -309,6 +309,16 @@ npm start
 
 📄 **[View Demo Script](docs/DEMO_VIDEO_SCRIPT.md)**
 
+The video covers:
+1. **0:00** — Introduction
+2. **0:08** — Dashboard overview (pool status, solvency, weather)
+3. **0:16** — Connect Freighter wallet
+4. **0:27** — Farmer enrollment (pay 1 mUSD premium) and claim 50 mUSD payout
+5. **0:38** — Investor liquidity deposit
+6. **0:54** — Oracle weather reading submission and pool trigger simulation (rainfall ≤ 50mm)
+7. **1:07** — Feedback form walkthrough
+8. **1:14** — Conclusion
+
 ---
 
 ## 👥 User Onboarding
