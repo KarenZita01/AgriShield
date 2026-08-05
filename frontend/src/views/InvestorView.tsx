@@ -63,6 +63,22 @@ export default function InvestorView({ pool, wallet }: InvestorProps) {
 
       <div className="card">
         <div className="card-header">
+          <span className="card-title">Pool Info</span>
+        </div>
+        <div className="stat-grid">
+          <div>
+            <div className="stat-label">Total Farmers</div>
+            <div className="stat-value text-sm">{pool.farmerCount}</div>
+          </div>
+          <div>
+            <div className="stat-label">Solvency</div>
+            <div className="stat-value text-sm">{(pool.solvencyRatio / 100).toFixed(0)}%</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
           <span className="card-title">Withdraw Liquidity</span>
         </div>
         <button
