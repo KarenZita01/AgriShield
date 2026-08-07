@@ -6,7 +6,7 @@ ws = wb.active
 ws.title = "Form Responses 1"
 
 headers = [
-    "Timestamp", "FULL NAME", "EMAIL ADRESS", "WALLET ADDRESS",
+    "Timestamp", "FULL NAME", "EMAIL ADDRESS", "WALLET ADDRESS",
     "NETWORK", "PRODUCT RATING", "EASE OF USE", "RELIABILITY",
     "IMPROVEMENTS", "RECOMMEND", "ADDITIONAL COMMENTS"
 ]
@@ -27,6 +27,12 @@ responses = [
 
 for row in responses:
     ws.append(row)
+
+# Set email cells as plain text (no hyperlinks)
+from openpyxl.styles import numbers
+for row in ws.iter_rows(min_row=2, min_col=3, max_col=3):
+    for cell in row:
+        cell.number_format = '@'
 
 for col in ws.columns:
     max_length = max(len(str(cell.value or "")) for cell in col)
