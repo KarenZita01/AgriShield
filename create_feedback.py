@@ -1,5 +1,5 @@
 import openpyxl
-from openpyxl.styles import Font
+from openpyxl.styles import Font, numbers
 
 wb = openpyxl.Workbook()
 ws = wb.active
@@ -12,7 +12,6 @@ headers = [
 ]
 ws.append(headers)
 
-# Style header row
 header_font = Font(color="FFFFFF", bold=True)
 for cell in ws[1]:
     cell.font = header_font
@@ -33,17 +32,18 @@ responses = [
 for row_data in responses:
     ws.append(row_data)
 
-# Force email column (col 3) as plain text - no hyperlinks
-for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=3, max_col=3):
+# Strip ALL hyperlinks from EVERY cell in the sheet
+for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
     for cell in row:
-        cell.number_format = '@'
+        cell._hyperlink = None
         cell.hyperlink = None
+        if isinstance(cell.value, str) and cell.value.startswith("mailto:"):
+            cell.value = cell.value.replace("mailto:", "")
 
-# Force wallet column (col 4) as plain text - no hyperlinks
-for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=4, max_col=4):
+# Force email and wallet columns as text format
+for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=3, max_col=4):
     for cell in row:
         cell.number_format = '@'
-        cell.hyperlink = None
 
 # Auto-width columns
 for col in ws.columns:
