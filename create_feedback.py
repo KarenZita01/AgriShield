@@ -1,5 +1,5 @@
 import openpyxl
-from datetime import datetime
+from openpyxl.styles import Font
 
 wb = openpyxl.Workbook()
 ws = wb.active
@@ -11,6 +11,11 @@ headers = [
     "IMPROVEMENTS", "RECOMMEND", "ADDITIONAL COMMENTS"
 ]
 ws.append(headers)
+
+# Style header row
+header_font = Font(color="FFFFFF", bold=True)
+for cell in ws[1]:
+    cell.font = header_font
 
 responses = [
     ["2025-08-05 10:00:00", "Amina Bello", "aminabello@gmail.com", "GA2TSCRPPMJQDKHW5V47KTSGT5VFD3ZBKGUYCH4DU2OKXGE3NSOA7KCM", "Testnet", 5, "Very Easy", "Very Reliable", "More crops covered", "Yes", "Great platform for farmers"],
@@ -25,15 +30,22 @@ responses = [
     ["2025-08-05 10:45:00", "Tunde Bakare", "tundebakare@gmail.com", "GAQOTCX43QCGKSQSFFUJ3J6P3SWHTDZ2UYANMBSFFBEWODCVGNNVW6CS", "Testnet", 5, "Very Easy", "Very Reliable", "Lower entry barrier", "Yes", "Revolutionary for African farmers"],
 ]
 
-for row in responses:
-    ws.append(row)
+for row_data in responses:
+    ws.append(row_data)
 
-# Set email cells as plain text (no hyperlinks)
-from openpyxl.styles import numbers
-for row in ws.iter_rows(min_row=2, min_col=3, max_col=3):
+# Force email column (col 3) as plain text - no hyperlinks
+for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=3, max_col=3):
     for cell in row:
         cell.number_format = '@'
+        cell.hyperlink = None
 
+# Force wallet column (col 4) as plain text - no hyperlinks
+for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=4, max_col=4):
+    for cell in row:
+        cell.number_format = '@'
+        cell.hyperlink = None
+
+# Auto-width columns
 for col in ws.columns:
     max_length = max(len(str(cell.value or "")) for cell in col)
     ws.column_dimensions[col[0].column_letter].width = min(max_length + 2, 40)
