@@ -1,0 +1,58 @@
+# .gitleaks.toml
+# Gitleaks configuration for AgriShield
+# Prevents secrets from being committed to the repository.
+# Run: gitleaks detect --source . --config .gitleaks.toml
+
+title = "AgriShield Gitleaks Config"
+
+[extend]
+# Extend the default Gitleaks ruleset
+useDefault = true
+
+# ── Custom rules ──────────────────────────────────────────────
+
+[[rules]]
+id = "stellar-secret-key"
+description = "Stellar secret key (starts with S, 56 chars)"
+regex = '''(?i)(stellar[_\-]?secret|oracle[_\-]?secret[_\-]?key|ORACLE_SECRET_KEY)\s*[=:]\s*['\"]?S[A-Z2-7]{55}['\"]?'''
+tags = ["stellar", "secret-key", "high"]
+
+[[rules]]
+id = "stellar-secret-key-raw"
+description = "Raw Stellar secret key value in any context"
+regex = '''(?<![A-Z2-7])S[A-Z2-7]{55}(?![A-Z2-7])'''
+tags = ["stellar", "secret-key", "high"]
+
+[[rules]]
+id = "posthog-key"
+description = "PostHog API key"
+regex = '''phc_[a-zA-Z0-9]{43}'''
+tags = ["analytics", "posthog", "medium"]
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+tags = ["aws", "high"]
+
+# ── Allowlist ─────────────────────────────────────────────────
+[allowlist]
+description = "Files and patterns that are safe to ignore"
+
+# Example/template files are expected to contain placeholder values
+paths = [
+  '''.env\.example''',
+  '''oracle/\.env\.example''',
+  '''frontend/\.env\.example''',
+]
+
+# Known test/demo addresses and placeholder values in docs
+regexes = [
+  # PostHog key that is intentionally public in the README
+  '''phc_v9Y3cwZm6kN4QvpATCqXM6jCVVitAdTsT8LYgJsuVN8o''',
+  # Stellar contract addresses (public, not secret keys)
+  '''CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G''',
+  '''CCXCW2SCJB4E6FOKAP6MTASQE4CL2QOYHWUILTYIE6JQRMY7KALKURWU''',
+  # Deployer public key in README onboarding table (public key, not secret)
+  '''GAYOIN4KSUA7UPNWNWTW45IK4JZHNHVEZZVIBT6IIZ3JDHDADDU5676Q''',
+]
