@@ -1,10 +1,30 @@
-# 🌾 AgriShield — Parametric Micro-Insurance Pool
+<div align="center">
 
-> Weather-indexed micro-insurance for smallholder farmers on Stellar/Soroban
+# 🌾 AgriShield
 
-[![Stellar Testnet](https://img.shields.io/badge/Network-Stellar%20Testnet-blue)](https://testnet.stellar.org)
-[![Soroban](https://img.shields.io/badge/Smart%20Contracts-Soroban-green)](https://soroban.stellar.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+### *Parametric Micro-Insurance for Smallholder Farmers on Stellar/Soroban*
+
+Weather-indexed micro-insurance that protects smallholder farmers in **Kaduna, Nigeria** against drought.
+When rainfall drops below a threshold, payouts trigger automatically — no claims adjuster needed.
+Built natively on **Stellar** & **Soroban** for speed, transparency, and ultra-low fees.
+
+---
+
+[![CI](https://img.shields.io/github/actions/workflow/status/KarenZita01/AgriShield/ci.yml?branch=main&label=CI&logo=github&logoColor=white&style=flat-square)](https://github.com/KarenZita01/AgriShield/actions)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen?style=flat-square&logo=checkmarx&logoColor=white)](https://github.com/KarenZita01/AgriShield/actions)
+[![Contract](https://img.shields.io/badge/contract-Stellar%20Testnet-6c3cb2?style=flat-square&logo=stellar&logoColor=white)](https://stellar-expert.com/testnet/contract/CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G)
+[![Frontend](https://img.shields.io/badge/frontend-live%20on%20Vercel-black?style=flat-square&logo=vercel&logoColor=white)](https://frontend-7ez3zix4v-karen-s-project1.vercel.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+[![Version](https://img.shields.io/badge/version-v0.1.0-blue?style=flat-square)](CHANGELOG.md)
+
+[![Soroban · Rust](https://img.shields.io/badge/Soroban%20%C2%B7%20Rust-orange?style=flat-square&logo=rust&logoColor=white)](https://soroban.stellar.org)
+[![React 18 + TypeScript](https://img.shields.io/badge/React%2018%20%2B%20TypeScript-61dafb?style=flat-square&logo=react&logoColor=black)](frontend/)
+[![Oracle · Node.js 20](https://img.shields.io/badge/Oracle%20%C2%B7%20Node.js%2020-339933?style=flat-square&logo=nodedotjs&logoColor=white)](oracle/)
+[![Open-Meteo API](https://img.shields.io/badge/Weather-Open--Meteo%20API-00b4d8?style=flat-square)](https://open-meteo.com)
+[![Freighter Wallet](https://img.shields.io/badge/Wallet-Freighter-7c3aed?style=flat-square&logo=stellar&logoColor=white)](https://freighter.app)
+[![Mainnet](https://img.shields.io/badge/mainnet-pending%20deployment-lightgrey?style=flat-square)](ROADMAP.md)
+
+</div>
 
 ---
 
