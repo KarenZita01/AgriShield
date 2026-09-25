@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Smart Contracts ────────────────────────────────────────
+  contracts:
+    name: Contracts (Rust)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            contracts/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('contracts/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Build contracts
+        working-directory: contracts
+        run: cargo build --release --target wasm32v1-none
+
+      - name: Test contracts
+        working-directory: contracts
+        run: cargo test
+
+  # ── Oracle ─────────────────────────────────────────────────
+  oracle:
+    name: Oracle (Node.js)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: oracle/package.json
+
+      - name: Install dependencies
+        working-directory: oracle
+        run: npm install
+
+      - name: Run oracle tests
+        working-directory: oracle
+        run: npm test
+
+  # ── Frontend ───────────────────────────────────────────────
+  frontend:
+    name: Frontend (React + TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install --legacy-peer-deps
+
+      - name: Type check
+        working-directory: frontend
+        run: npx tsc --noEmit
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_POOL_CONTRACT_ID: ${{ secrets.VITE_POOL_CONTRACT_ID }}
+          VITE_TOKEN_CONTRACT_ID: ${{ secrets.VITE_TOKEN_CONTRACT_ID }}
+          VITE_RPC_URL: https://soroban-testnet.stellar.org
+          VITE_NETWORK_PASSPHRASE: "Test SDF Future Network ; October 2022"
+          VITE_HORIZON_URL: https://horizon-testnet.stellar.org
