@@ -1,0 +1,50 @@
+cff-version: 1.2.0
+title: AgriShield — Parametric Micro-Insurance Pool
+message: >-
+  If you use AgriShield in your research, teaching, or build upon it,
+  please cite it using the metadata below.
+type: software
+version: 0.1.0
+date-released: "2026-01-15"
+license: MIT
+url: "https://github.com/KarenZita01/AgriShield"
+repository-code: "https://github.com/KarenZita01/AgriShield"
+abstract: >-
+  AgriShield is an open-source parametric micro-insurance platform built on
+  Stellar and Soroban. It protects smallholder farmers in Kaduna, Nigeria
+  against drought by using automated weather-indexed triggers. When two
+  independent oracles agree that rainfall has fallen below a configurable
+  threshold, enrolled farmers receive automatic payouts — no claims adjuster
+  required. The system comprises a Soroban smart contract (Rust), a Node.js
+  oracle service consuming the Open-Meteo API, and a React/TypeScript
+  frontend with Freighter wallet integration.
+keywords:
+  - parametric insurance
+  - micro-insurance
+  - smallholder farmers
+  - Stellar
+  - Soroban
+  - blockchain
+  - smart contracts
+  - decentralized finance
+  - DeFi
+  - climate risk
+  - agricultural finance
+  - Nigeria
+  - open source
+authors:
+  - family-names: KarenZita01
+    alias: KarenZita01
+    affiliation: "Independent / Open Source"
+    orcid: ""
+preferred-citation:
+  type: software
+  title: AgriShield — Parametric Micro-Insurance Pool for Smallholder Farmers on Stellar/Soroban
+  authors:
+    - family-names: KarenZita01
+      alias: KarenZita01
+  version: 0.1.0
+  date-released: "2026-01-15"
+  license: MIT
+  url: "https://github.com/KarenZita01/AgriShield"
+  repository-code: "https://github.com/KarenZita01/AgriShield"
