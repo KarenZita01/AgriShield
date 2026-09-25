@@ -137,7 +137,7 @@ AgriShield uses a **decentralized architecture** — there is no traditional bac
 
 | Component | URL | Status |
 |-----------|-----|--------|
-| **Frontend** | [https://frontend-gilt-eight-21.vercel.app](https://frontend-gilt-eight-21.vercel.app) | ✅ Live |
+| **Frontend** | [https://frontend-7ez3zix4v-karen-s-project1.vercel.app](https://frontend-7ez3zix4v-karen-s-project1.vercel.app) | ✅ Live |
 | **Pool Contract** | [Stellar Expert](https://stellar-expert.com/testnet/contract/CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G) | ✅ Deployed |
 | **Token Contract** | [Stellar Expert](https://stellar-expert.com/testnet/contract/CCXCW2SCJB4E6FOKAP6MTASQE4CL2QOYHWUILTYIE6JQRMY7KALKURWU) | ✅ Deployed |
 | **GitHub** | [https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool](https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool) | ✅ Public |
