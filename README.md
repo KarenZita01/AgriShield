@@ -4,7 +4,7 @@
 
 [![Stellar Testnet](https://img.shields.io/badge/Network-Stellar%20Testnet-blue)](https://testnet.stellar.org)
 [![Soroban](https://img.shields.io/badge/Smart%20Contracts-Soroban-green)](https://soroban.stellar.org)
-[![License: BSD-2-Clause](https://img.shields.io/badge/License-BSD--2--Clause-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
