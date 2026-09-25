@@ -4,7 +4,7 @@
 
 [![Stellar Testnet](https://img.shields.io/badge/Network-Stellar%20Testnet-blue)](https://testnet.stellar.org)
 [![Soroban](https://img.shields.io/badge/Smart%20Contracts-Soroban-green)](https://soroban.stellar.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: BSD-2-Clause](https://img.shields.io/badge/License-BSD--2--Clause-blue.svg)](LICENSE)
 
 ---
 
@@ -140,7 +140,7 @@ AgriShield uses a **decentralized architecture** — there is no traditional bac
 | **Frontend** | [https://frontend-7ez3zix4v-karen-s-project1.vercel.app](https://frontend-7ez3zix4v-karen-s-project1.vercel.app) | ✅ Live |
 | **Pool Contract** | [Stellar Expert](https://stellar-expert.com/testnet/contract/CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G) | ✅ Deployed |
 | **Token Contract** | [Stellar Expert](https://stellar-expert.com/testnet/contract/CCXCW2SCJB4E6FOKAP6MTASQE4CL2QOYHWUILTYIE6JQRMY7KALKURWU) | ✅ Deployed |
-| **GitHub** | [https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool](https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool) | ✅ Public |
+| **GitHub** | [https://github.com/KarenZita01/AgriShield](https://github.com/KarenZita01/AgriShield) | ✅ Public |
 
 ---
 
@@ -376,8 +376,8 @@ The form collects:
 
 ```bash
 # Clone the repo
-git clone https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool.git
-cd Parametric-Micro-Insurance-Pool
+git clone https://github.com/KarenZita01/AgriShield.git
+cd AgriShield
 
 # Build contracts
 cd contracts
@@ -442,7 +442,7 @@ node --test src/*.test.js
 ## 📁 Project Structure
 
 ```
-Parametric-Micro-Insurance-Pool/
+AgriShield/
 ├── contracts/                    # Smart Contracts (Backend)
 │   ├── insurance-pool/
 │   │   └── src/
