@@ -66,6 +66,169 @@ AgriShield is a **parametric micro-insurance** platform that protects smallholde
 
 ---
 
+
+## 📸 Photograph Description
+
+*A digital infographic diagram illustrating the "AgriShield" weather-indexed micro-insurance system for smallholder farmers, presented over a light blue sky and green agricultural field background.*
+
+### Top Header Section
+- **Top Left:** A green shield emblem with white border, containing a yellow sun and green sprouts inside. Next to it, the text "AgriShield" in a dark green sans-serif font, followed underneath by:
+  ```
+  Weather-Indexed Micro-Insurance
+  for Smallholder Farmers.
+  ```
+- **Top Right:** 
+  - Text lines:
+    ```
+    Stronger Farmers.
+    Safer Harvests.
+    A Resilient Future.
+    ```
+  - A green pin icon followed by white text: `Kaduna, Nigeria`.
+  - An illustration of a smiling farmer wearing a straw hat and green overalls, holding a tablet.
+
+### Upper Flow Diagram (Middle Section)
+- **Left (Weather API):**
+  - An illustration of a weather station pole with a light bulb and cloud.
+  - A light blue rounded rectangle containing:
+    - A yellow sun and blue cloud icon with raindrops.
+    - Title: `Open-Meteo Weather API`
+    - Description: `Provides real-time rainfall data.`
+  - An arrow labeled `Rainfall data` points right to Oracle A.
+
+- **Center Top (Oracles):**
+  - **Oracle A:** A blue server rack icon with a yellow `[JS]` badge. Below it:
+    ```
+    Oracle A
+    (Node.js)
+    Processes & validates
+    data.
+    ```
+  - **Oracle B:** A similar blue server rack icon with a yellow `[JS]` badge. Below it:
+    ```
+    Oracle B
+    (Node.js)
+    Processes & validates
+    data.
+    ```
+  - Between Oracle A and Oracle B: A double-sided green arrow labeled `Mutual agreement`. Vertical green double arrows point downwards from both oracles to the Soroban Insurance Pool.
+
+- **Right (Weather Conditions):**
+  - A light green rounded rectangle enclosing two image boxes side by side:
+    1. **Drought:** Image of cracked dry earth under a bright sun. Label: `Drought`
+    2. **Heavy Rainfall:** Image of green crops being heavily rained on. Label: `Heavy Rainfall`
+    - Subtext underneath: `Weather data determines payout conditions.`
+
+### Middle-Left Flow
+- **Investors Box:**
+  - Illustration of a businessman in a blue suit next to stacks of gold coins.
+  - Light blue box containing:
+    - Title: `Investors`
+    - Subtitle: `Deposit mUSD for liquidity.`
+  - A green downward arrow labeled `mUSD` points to the Liquidity Pool.
+
+- **Liquidity Pool Box:**
+  - Illustration of stacks of gold coins on a blue circular platform.
+  - Light blue box containing:
+    - Title: `Liquidity Pool (mUSD)`
+    - Subtitle: `Funds payouts and operations.`
+  - A green arrow pointing right, labeled `Liquidity available`, connects to the Soroban Insurance Pool.
+
+### Center Smart Contract Box
+- A light purple rounded rectangle with a thin purple border:
+  - Header: A purple icon of a document with lines, followed by:
+    ```
+    Soroban
+    Insurance Pool
+    Smart Contract
+    ```
+  - Bullet points with green checkmarks:
+    - `Checks oracle agreement (≤ 50 mm rainfall)`
+    - `Triggers automatic payout`
+    - `Manages liquidity & claims`
+
+### Right Payout Flow
+- A green arrow labeled `Payout triggered (≤ 50 mm)` points right from the Soroban Pool to an illustration of stacks of gold coins with a green checkmark badge.
+- Light blue box below the coins:
+  - Title: `Enrolled Farmers`
+  - Subtitle: `Receive 50 mUSD coverage.`
+
+### Bottom-Left Farmer Box
+- Illustration of a female farmer in a straw hat holding a smartphone.
+- Light blue box containing:
+  - Green sprout icon and text:
+    ```
+    Farmers
+    Enroll & pay
+    1 mUSD premium.
+    ```
+- An upward curving green arrow labeled `1 mUSD premium` points from the farmer to the Liquidity Pool/Soroban Pool pathway.
+
+### Bottom-Center Stellar Ecosystem Section
+- **Stellar Blockchain Box:**
+  - A dark blue rounded rectangle containing:
+    - White Stellar logo (circle with stylized 'S') surrounded by connected blue nodes and small blue cube icons.
+    - Title: `Stellar Blockchain`
+    - Subtitle: `Secure • Transparent • Decentralized`
+  - Vertical blue double arrows connect the Stellar Blockchain box to the Soroban Insurance Pool above it.
+- **Freighter Wallet Box:**
+  - A blue arrow points right from Stellar Blockchain to a light blue box containing:
+    - A blue wallet icon.
+    - Title: `Freighter Wallet`
+    - Subtitle: `Signs transactions & manages assets.`
+
+### Bottom-Right Farmers Display
+- Illustration of three smiling farmers (one man in a straw hat holding a phone, two women standing close).
+- Dark green rounded rectangle overlay with white text: `Financial protection when it matters most.`
+
+---
+
+### Bottom Platform Dashboard Banner
+A wide, light blue rounded container spanning the bottom width with a white background and light blue border, divided into 5 distinct vertical sections from left to right:
+
+1. **Platform Dashboard (Left Panel):**
+   - Dark green rounded background (`#0B4F30`) with white text and a green-and-yellow bar chart icon at the top.
+   - Text:
+     ```
+     Platform
+     Dashboard
+     ```
+   - Description below: `Real-time insights and transparency.`
+
+2. **Pool Status:**
+   - Heading: `Pool Status`
+   - A circular progress/gauge graphic showing `78% Solvency Ratio` in bold text inside a green arc.
+   - Below gauge:
+     - `Total Liquidity`
+     - `1,250 mUSD`
+
+3. **Weather Status:**
+   - Heading: `Weather Status`
+   - Blue cloud icon with raindrops.
+   - Text:
+     - `Rainfall (24h)`
+     - `32 mm`
+   - A green pill button: `Within Threshold`
+
+4. **Farmer Claims:**
+   - Heading: `Farmer Claims`
+   - User silhouette icon.
+   - Data points:
+     - `Total Paid Out` -> `250 mUSD`
+     - `Farmers Covered` -> `1,248`
+
+5. **Investor Liquidity:**
+   - Heading: `Investor Liquidity`
+   - Icon of stacked gold coins.
+   - Data points:
+     - `Available Liquidity` -> `1,000 mUSD`
+     - `APY` -> `8.5%`
+
+### Footer Bar
+- Dark teal/green background bar spanning the very bottom.
+- Centered white text with small green sprout icons on both ends:
+  `AgriShield | Powered by Stellar Soroban | Built for a more resilient agricultural future.`
+
 ## 🏗 Architecture
 
 AgriShield uses a **decentralized architecture** — there is no traditional backend server. Instead, the blockchain itself serves as the backend:
