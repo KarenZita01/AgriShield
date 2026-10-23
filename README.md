@@ -67,7 +67,7 @@ AgriShield is a **parametric micro-insurance** platform that protects smallholde
 ---
 
 
-![AgriShield Main Diagram](docs/screenshots/about.png)
+![AgriShield Main Diagram](docs/screenshots/overview-agri.png)
 ## 🏗 Architecture
 
 AgriShield uses a **decentralized architecture** — there is no traditional backend server. Instead, the blockchain itself serves as the backend:
