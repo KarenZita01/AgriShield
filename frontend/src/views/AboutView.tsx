@@ -2,6 +2,11 @@ export default function AboutView() {
   return (
     <div>
       <div className="card">
+        <img
+          src="docs/screenshots/about.png"
+          alt="AgriShield about diagram"
+          style={{ width: '100%', maxWidth: 400, borderRadius: 12, display: 'block', margin: '0 auto 12px' }}
+        />
         <div className="card-header">
           <span className="card-title">About AgriShield</span>
         </div>
