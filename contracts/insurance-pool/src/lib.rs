@@ -355,7 +355,13 @@ impl InsurancePool {
             panic_with_error!(env, PoolError::NotTriggered);
         }
         let now = env.ledger().timestamp();
-        if now > config.window_end.saturating_add(config.payout_window) {
+        let triggered = triggered_at(&env);
+        let claim_deadline = if triggered > 0 {
+            triggered.saturating_add(config.payout_window)
+        } else {
+            config.window_end.saturating_add(config.payout_window)
+        };
+        if now > claim_deadline {
             panic_with_error!(env, PoolError::ClaimWindowClosed);
         }
 
