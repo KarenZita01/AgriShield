@@ -13,9 +13,14 @@ export async function fetchWeather(latitude, longitude, retries = 3) {
         throw new Error('Invalid weather response structure')
       }
 
+      const weatherTime = data.current.time
+      if (!weatherTime) {
+        throw new Error('Missing weather observation time')
+      }
+
       return {
         rainfall: data.current.rain,
-        timestamp: Math.floor(Date.now() / 1000),
+        timestamp: Math.floor(new Date(weatherTime).getTime() / 1000),
       }
     } catch (err) {
       console.error(`Weather fetch attempt ${attempt}/${retries} failed:`, err.message)
