@@ -253,6 +253,19 @@ impl InsurancePool {
             .publish((symbol_short!("tolerance_updated"),), (tolerance,));
     }
 
+    pub fn set_admin(env: Env, new_admin: Address) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if new_admin == existing.admin {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        let mut updated = existing;
+        updated.admin = new_admin.clone();
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("admin_changed"),), (existing.admin, new_admin));
+    }
+
     pub fn enroll(env: Env, farmer: Address) {
         if is_guarded(&env) {
             panic_with_error!(env, PoolError::ReentrancyDetected);
