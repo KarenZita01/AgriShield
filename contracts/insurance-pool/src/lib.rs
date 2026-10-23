@@ -183,6 +183,12 @@ impl InsurancePool {
         if amount > token.balance(&env.current_contract_address()) {
             panic_with_error!(env, PoolError::InsufficientBalance);
         }
+        let remaining = token
+            .balance(&env.current_contract_address())
+            .saturating_sub(amount);
+        if remaining < net_liability(&env) {
+            panic_with_error!(env, PoolError::BreaksSolvency);
+        }
         token.transfer(&env.current_contract_address(), &config.admin, &amount);
         env.events()
             .publish((symbol_short!("withdraw"),), (config.admin, amount));
