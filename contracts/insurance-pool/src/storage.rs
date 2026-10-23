@@ -87,6 +87,7 @@ pub enum DataKey {
     FarmerEnrolledAt(Address),
     LastOracleSubmit(Address),
     LastDeposit(Address),
+    TriggeredAt,
     Farmer(Address),
     Provider(Address),
     Reading(u64),
@@ -240,4 +241,17 @@ pub fn last_deposit(env: &Env, provider: &Address) -> u64 {
         .persistent()
         .get::<DataKey, u64>(&DataKey::LastDeposit(provider.clone()))
         .unwrap_or(0)
+}
+
+pub fn triggered_at(env: &Env) -> u64 {
+    env.storage()
+        .persistent()
+        .get(&DataKey::TriggeredAt)
+        .unwrap_or(0)
+}
+
+pub fn set_triggered_at(env: &Env, ts: u64) {
+    env.storage()
+        .persistent()
+        .set(&DataKey::TriggeredAt, &ts);
 }

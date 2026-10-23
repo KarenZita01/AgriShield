@@ -13,8 +13,9 @@ pub use crate::storage::{
     claimed_count, contract_version, farmer_count, farmer_enrolled_at, get_config, get_state,
     is_blacklisted, is_guarded, is_paused, last_deposit, last_oracle_submit, last_reading_id,
     liability, liquidity_lock_period, max_farmers, min_enrollment_period, net_liability,
-    set_guard, set_state, total_claimed, total_liquidity, total_payouts, total_premiums,
-    CoverageRecord, DataKey, PoolConfig, PoolState, Reading, METRIC_RAINFALL,
+    set_guard, set_state, set_triggered_at, total_claimed, total_liquidity, total_payouts,
+    total_premiums, triggered_at, CoverageRecord, DataKey, PoolConfig, PoolState, Reading,
+    METRIC_RAINFALL,
 };
 
 #[contracterror]
@@ -610,6 +611,7 @@ impl InsurancePool {
 
             if reading.breach {
                 set_state(&env, PoolState::Triggered);
+                set_triggered_at(&env, env.ledger().timestamp());
                 env.events().publish(
                     (symbol_short!("triggered"),),
                     (reading_id, reading.timestamp, a, b),
@@ -695,6 +697,10 @@ impl InsurancePool {
 
     pub fn net_liability(env: Env) -> i128 {
         crate::storage::net_liability(&env)
+    }
+
+    pub fn triggered_at(env: Env) -> u64 {
+        crate::storage::triggered_at(&env)
     }
 
     pub fn solvency_ratio(env: Env) -> i128 {
