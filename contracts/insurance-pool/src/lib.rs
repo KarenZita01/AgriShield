@@ -10,9 +10,11 @@ mod storage;
 mod test;
 
 pub use crate::storage::{
-    claimed_count, farmer_count, get_config, get_state, is_paused, last_reading_id, liability,
-    set_state, total_liquidity, total_payouts, total_premiums, CoverageRecord, DataKey,
-    PoolConfig, PoolState, Reading, METRIC_RAINFALL,
+    claimed_count, contract_version, farmer_count, farmer_enrolled_at, get_config, get_state,
+    is_blacklisted, is_guarded, is_paused, last_deposit, last_oracle_submit, last_reading_id,
+    liability, liquidity_lock_period, max_farmers, min_enrollment_period, net_liability,
+    set_guard, set_state, total_claimed, total_liquidity, total_payouts, total_premiums,
+    CoverageRecord, DataKey, PoolConfig, PoolState, Reading, METRIC_RAINFALL,
 };
 
 #[contracterror]
@@ -46,6 +48,15 @@ pub enum PoolError {
     PoolStillActive = 26,
     AlreadyClosed = 27,
     PoolNotClosed = 28,
+    ReentrancyDetected = 29,
+    ReadingIdReplayed = 30,
+    ReadingTooStale = 31,
+    OracleCooldown = 32,
+    PoolAtCapacity = 33,
+    TooSoonToClaim = 34,
+    LiquidityLocked = 35,
+    Blacklisted = 36,
+    AdminOnly = 37,
 }
 
 #[contract]
@@ -98,6 +109,9 @@ impl InsurancePool {
         env.storage()
             .persistent()
             .set(&DataKey::LastReadingId, &0u64);
+        env.storage()
+            .instance()
+            .set(&DataKey::ContractVersion, &1u32);
 
         env.events().publish(
             (symbol_short!("created"),),
@@ -174,6 +188,16 @@ impl InsurancePool {
     }
 
     pub fn enroll(env: Env, farmer: Address) {
+        if is_guarded(&env) {
+            panic_with_error!(env, PoolError::ReentrancyDetected);
+        }
+        set_guard(&env, true);
+        let result = enroll_inner(&env, farmer);
+        set_guard(&env, false);
+        result;
+    }
+
+    fn enroll_inner(env: Env, farmer: Address) {
         farmer.require_auth();
         let config = get_config(&env);
         if is_paused(&env) {
@@ -181,6 +205,12 @@ impl InsurancePool {
         }
         if get_state(&env) != PoolState::Active {
             panic_with_error!(env, PoolError::PoolNotActive);
+        }
+        if is_blacklisted(&env, &farmer) {
+            panic_with_error!(env, PoolError::Blacklisted);
+        }
+        if farmer_count(&env) >= max_farmers(&env) {
+            panic_with_error!(env, PoolError::PoolAtCapacity);
         }
         if env
             .storage()
@@ -207,6 +237,9 @@ impl InsurancePool {
         env.storage()
             .persistent()
             .set(&DataKey::Farmer(farmer.clone()), &record);
+        env.storage()
+            .persistent()
+            .set(&DataKey::FarmerEnrolledAt(&farmer), &env.ledger().timestamp());
         env.storage()
             .persistent()
             .set(&DataKey::FarmerCount, &(farmer_count(&env) + 1));

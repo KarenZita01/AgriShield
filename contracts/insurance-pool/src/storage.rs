@@ -74,9 +74,19 @@ pub enum DataKey {
     TotalLiquidity,
     TotalPremiums,
     TotalPayouts,
+    TotalClaimed,
     FarmerCount,
     ClaimedCount,
     LastReadingId,
+    ContractVersion,
+    MaxFarmers,
+    MinEnrollmentPeriod,
+    LiquidityLockPeriod,
+    Guard,
+    Blacklist(Address),
+    FarmerEnrolledAt(Address),
+    LastOracleSubmit(Address),
+    LastDeposit(Address),
     Farmer(Address),
     Provider(Address),
     Reading(u64),
@@ -152,4 +162,82 @@ pub fn last_reading_id(env: &Env) -> u64 {
 
 pub fn liability(env: &Env) -> i128 {
     farmer_count(env) as i128 * get_config(env).coverage
+}
+
+pub fn total_claimed(env: &Env) -> i128 {
+    env.storage()
+        .persistent()
+        .get(&DataKey::TotalClaimed)
+        .unwrap_or(0)
+}
+
+pub fn net_liability(env: &Env) -> i128 {
+    liability(env).saturating_sub(total_claimed(env))
+}
+
+pub fn contract_version(env: &Env) -> u32 {
+    env.storage()
+        .instance()
+        .get(&DataKey::ContractVersion)
+        .unwrap_or(1)
+}
+
+pub fn max_farmers(env: &Env) -> u32 {
+    env.storage()
+        .persistent()
+        .get(&DataKey::MaxFarmers)
+        .unwrap_or(u32::MAX)
+}
+
+pub fn min_enrollment_period(env: &Env) -> u64 {
+    env.storage()
+        .persistent()
+        .get(&DataKey::MinEnrollmentPeriod)
+        .unwrap_or(0)
+}
+
+pub fn liquidity_lock_period(env: &Env) -> u64 {
+    env.storage()
+        .persistent()
+        .get(&DataKey::LiquidityLockPeriod)
+        .unwrap_or(0)
+}
+
+pub fn is_blacklisted(env: &Env, addr: &Address) -> bool {
+    env.storage()
+        .persistent()
+        .get::<DataKey, bool>(&DataKey::Blacklist(addr.clone()))
+        .unwrap_or(false)
+}
+
+pub fn is_guarded(env: &Env) -> bool {
+    env.storage()
+        .instance()
+        .get(&DataKey::Guard)
+        .unwrap_or(false)
+}
+
+pub fn set_guard(env: &Env, v: bool) {
+    env.storage().instance().set(&DataKey::Guard, &v);
+}
+
+pub fn farmer_enrolled_at(env: &Env, farmer: &Address) -> u64 {
+    env.storage()
+        .persistent()
+        .get::<DataKey, u64>(&DataKey::FarmerEnrolledAt(farmer.clone()))
+        .unwrap_or(0)
+}
+
+pub fn last_oracle_submit(env: &Env, oracle: &Address) -> u64 {
+    env.storage()
+        .persistent()
+        .get::<DataKey, u64>(&DataKey::LastOracleSubmit(oracle.clone()))
+        .unwrap_or(0)
+}
+
+pub fn last_deposit(env: &Env, provider: &Address) -> u64 {
+    env.storage()
+        .persistent()
+        .get::<DataKey, u64>(&DataKey::LastDeposit(provider.clone()))
+        .unwrap_or(0)
 }
