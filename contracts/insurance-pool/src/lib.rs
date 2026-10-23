@@ -203,6 +203,30 @@ impl InsurancePool {
             .publish((symbol_short!("unblacklist"),), (addr,));
     }
 
+    pub fn update_config(env: Env, config: PoolConfig) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if config.oracle_a == config.oracle_b {
+            panic_with_error!(env, PoolError::OraclesMustDiffer);
+        }
+        if config.premium <= 0
+            || config.coverage <= 0
+            || config.threshold <= 0
+            || config.min_liquidity <= 0
+        {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        if config.window_end <= config.window_start {
+            panic_with_error!(env, PoolError::InvalidWindow);
+        }
+        if config.metric != METRIC_RAINFALL {
+            panic_with_error!(env, PoolError::UnsupportedMetric);
+        }
+        env.storage().instance().set(&DataKey::Config, &config);
+        env.events()
+            .publish((symbol_short!("config_updated"),), (config.threshold, config.premium));
+    }
+
     pub fn enroll(env: Env, farmer: Address) {
         if is_guarded(&env) {
             panic_with_error!(env, PoolError::ReentrancyDetected);
