@@ -647,7 +647,15 @@ impl InsurancePool {
     }
 
     pub fn liability(env: Env) -> i128 {
-        liability(&env)
+        crate::storage::liability(&env)
+    }
+
+    pub fn total_claimed(env: Env) -> i128 {
+        total_claimed(&env)
+    }
+
+    pub fn net_liability(env: Env) -> i128 {
+        crate::storage::net_liability(&env)
     }
 
     pub fn solvency_ratio(env: Env) -> i128 {
