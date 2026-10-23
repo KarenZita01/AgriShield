@@ -457,6 +457,9 @@ impl InsurancePool {
         if value < 0 {
             panic_with_error!(env, PoolError::InvalidReading);
         }
+        if value > 1_000_000_000_000i128 {
+            panic_with_error!(env, PoolError::InvalidReading);
+        }
 
         let mut reading: Reading = env
             .storage()
@@ -469,6 +472,9 @@ impl InsurancePool {
                 agreed: false,
                 breach: false,
             });
+        if reading.agreed {
+            panic_with_error!(env, PoolError::ReadingIdReplayed);
+        }
         if reading.timestamp != timestamp {
             panic_with_error!(env, PoolError::TimestampMismatch);
         }
