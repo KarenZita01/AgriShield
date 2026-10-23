@@ -227,6 +227,19 @@ impl InsurancePool {
             .publish((symbol_short!("config_updated"),), (config.threshold, config.premium));
     }
 
+    pub fn set_threshold(env: Env, threshold: i128) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if threshold <= 0 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        let mut updated = existing;
+        updated.threshold = threshold;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("threshold_updated"),), (threshold,));
+    }
+
     pub fn enroll(env: Env, farmer: Address) {
         if is_guarded(&env) {
             panic_with_error!(env, PoolError::ReentrancyDetected);
