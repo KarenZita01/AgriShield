@@ -240,6 +240,19 @@ impl InsurancePool {
             .publish((symbol_short!("threshold_updated"),), (threshold,));
     }
 
+    pub fn set_tolerance(env: Env, tolerance: i128) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if tolerance < 0 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        let mut updated = existing;
+        updated.tolerance = tolerance;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("tolerance_updated"),), (tolerance,));
+    }
+
     pub fn enroll(env: Env, farmer: Address) {
         if is_guarded(&env) {
             panic_with_error!(env, PoolError::ReentrancyDetected);
