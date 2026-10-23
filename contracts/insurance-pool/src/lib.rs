@@ -732,6 +732,24 @@ impl InsurancePool {
         let held = token.balance(&env.current_contract_address());
         held * 10_000 / outstanding
     }
+
+    pub fn summary(env: Env) -> (u32, bool, u32, u32, i128, i128, i128, i128, u64, i128) {
+        let config = get_config(&env);
+        let token = TokenClient::new(&env, &config.token);
+        let held = token.balance(&env.current_contract_address());
+        (
+            get_state(&env).to_u32(),
+            is_paused(&env),
+            farmer_count(&env),
+            claimed_count(&env),
+            total_liquidity(&env),
+            total_payouts(&env),
+            net_liability(&env),
+            held,
+            last_reading_id(&env),
+            held * 10_000 / crate::storage::liability(&env).max(1),
+        )
+    }
 }
 
 use soroban_sdk::panic_with_error;
