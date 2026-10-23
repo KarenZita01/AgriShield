@@ -422,6 +422,9 @@ impl InsurancePool {
         if timestamp < config.window_start || timestamp > config.window_end {
             panic_with_error!(env, PoolError::OutsideWindow);
         }
+        if now.saturating_sub(timestamp) > 7 * 86_400 {
+            panic_with_error!(env, PoolError::ReadingTooStale);
+        }
         let last_submit = last_oracle_submit(&env, &oracle);
         if now.saturating_sub(last_submit) < 60 {
             panic_with_error!(env, PoolError::OracleCooldown);
