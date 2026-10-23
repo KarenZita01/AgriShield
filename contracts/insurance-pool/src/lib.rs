@@ -345,6 +345,9 @@ impl InsurancePool {
             &DataKey::TotalLiquidity,
             &(total_liquidity(&env) + amount),
         );
+        env.storage()
+            .persistent()
+            .set(&DataKey::LastDeposit(&provider), &env.ledger().timestamp());
 
         env.events()
             .publish((symbol_short!("deposit"),), (provider, amount));
@@ -370,6 +373,13 @@ impl InsurancePool {
             .unwrap_or(0);
         if amount > current {
             panic_with_error!(env, PoolError::InsufficientBalance);
+        }
+
+        let now = env.ledger().timestamp();
+        let last_dep = last_deposit(&env, &provider);
+        let lock = liquidity_lock_period(&env);
+        if lock > 0 && last_dep > 0 && now.saturating_sub(last_dep) < lock {
+            panic_with_error!(env, PoolError::LiquidityLocked);
         }
 
         let token = TokenClient::new(&env, &config.token);
