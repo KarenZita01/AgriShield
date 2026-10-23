@@ -401,6 +401,9 @@ impl InsurancePool {
         if remaining < liability(&env) {
             panic_with_error!(env, PoolError::BreaksSolvency);
         }
+        if total_liquidity(&env) - amount < config.min_liquidity {
+            panic_with_error!(env, PoolError::PoolInsolvent);
+        }
 
         token.transfer(&env.current_contract_address(), &provider, &amount);
         env.storage()
