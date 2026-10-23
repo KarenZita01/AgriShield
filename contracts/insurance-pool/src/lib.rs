@@ -187,6 +187,22 @@ impl InsurancePool {
             .publish((symbol_short!("withdraw"),), (config.admin, amount));
     }
 
+    pub fn blacklist_address(env: Env, addr: Address) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage().persistent().set(&DataKey::Blacklist(addr), &true);
+        env.events()
+            .publish((symbol_short!("blacklist"),), (addr,));
+    }
+
+    pub fn unblacklist_address(env: Env, addr: Address) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage().persistent().remove(&DataKey::Blacklist(addr));
+        env.events()
+            .publish((symbol_short!("unblacklist"),), (addr,));
+    }
+
     pub fn enroll(env: Env, farmer: Address) {
         if is_guarded(&env) {
             panic_with_error!(env, PoolError::ReentrancyDetected);
