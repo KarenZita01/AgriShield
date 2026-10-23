@@ -394,8 +394,15 @@ impl InsurancePool {
         let outstanding = net_liability(&env);
         let payout = if balance >= outstanding {
             config.coverage
+        } else if balance > 0 {
+            let proportional = (balance * config.coverage) / outstanding
+            if proportional == 0 {
+                1i128
+            } else {
+                proportional
+            }
         } else {
-            (balance * config.coverage) / outstanding
+            0i128
         };
         if payout <= 0 {
             panic_with_error!(env, PoolError::EmptyPool);
