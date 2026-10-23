@@ -325,6 +325,11 @@ npm start
 
 ---
 
+<video controls width="100%" style="max-width: 640px; border-radius: 12px; margin: 16px 0;">
+  <source src="docs/screenshots/demo_video_silent.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ## 🎬 Demo Video
 
 🎬 **[Watch the Demo Video](https://youtube.com/shorts/XslewyLFuJY?si=T2q0XCDD-K7g9XDH)**
