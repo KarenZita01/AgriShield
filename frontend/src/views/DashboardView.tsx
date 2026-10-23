@@ -1,6 +1,7 @@
 import Stat from '../components/Stat'
 import ThresholdGauge from '../components/ThresholdGauge'
 import WeatherCard from '../components/WeatherCard'
+import { useToasts } from '../hooks/useToasts'
 
 interface DashboardProps {
   pool: any
@@ -22,6 +23,7 @@ const STATE_CLASSES: Record<number, string> = {
 }
 
 export default function DashboardView({ pool, wallet }: DashboardProps) {
+  const { addToast } = useToasts()
   const formatAmount = (val: string) => {
     const num = parseInt(val) || 0
     return (num / 10_000_000).toFixed(2)
@@ -71,10 +73,30 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
           </p>
         ) : (
           <div className="flex gap-2">
-            <button className="btn btn-primary btn-sm" style={{ flex: 1 }}>
+            <button
+              className="btn btn-primary btn-sm"
+              style={{ flex: 1 }}
+              onClick={() => {
+                if (!wallet.connected) {
+                  addToast('Connect your wallet first', 'error')
+                  return
+                }
+                addToast('Opening farmer enrollment...', 'info')
+              }}
+            >
               Enroll as Farmer
             </button>
-            <button className="btn btn-outline btn-sm" style={{ flex: 1 }}>
+            <button
+              className="btn btn-outline btn-sm"
+              style={{ flex: 1 }}
+              onClick={() => {
+                if (!wallet.connected) {
+                  addToast('Connect your wallet first', 'error')
+                  return
+                }
+                addToast('Opening liquidity deposit...', 'info')
+              }}
+            >
               Provide Liquidity
             </button>
           </div>
