@@ -319,6 +319,9 @@ impl InsurancePool {
     pub fn deposit_liquidity(env: Env, provider: Address, amount: i128) {
         provider.require_auth();
         let config = get_config(&env);
+        if is_blacklisted(&env, &provider) {
+            panic_with_error!(env, PoolError::Blacklisted);
+        }
         if is_paused(&env) {
             panic_with_error!(env, PoolError::Paused);
         }
@@ -356,6 +359,9 @@ impl InsurancePool {
     pub fn withdraw_liquidity(env: Env, provider: Address, amount: i128) {
         provider.require_auth();
         let config = get_config(&env);
+        if is_blacklisted(&env, &provider) {
+            panic_with_error!(env, PoolError::Blacklisted);
+        }
         if is_paused(&env) {
             panic_with_error!(env, PoolError::Paused);
         }
