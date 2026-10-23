@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+const STORAGE_KEY = 'agrishield_settings'
 
 export default function SettingsView() {
   const [rpcUrl, setRpcUrl] = useState(import.meta.env.VITE_RPC_URL || '')
@@ -6,8 +8,22 @@ export default function SettingsView() {
   const [tokenId, setTokenId] = useState(import.meta.env.VITE_TOKEN_CONTRACT_ID || '')
   const [saved, setSaved] = useState(false)
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const s = JSON.parse(raw)
+        if (typeof s.rpcUrl === 'string') setRpcUrl(s.rpcUrl)
+        if (typeof s.poolId === 'string') setPoolId(s.poolId)
+        if (typeof s.tokenId === 'string') setTokenId(s.tokenId)
+      }
+    } catch {}
+  }, [])
+
   const handleSave = () => {
-    // Settings are stored in .env, show info message
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ rpcUrl, poolId, tokenId }))
+    } catch {}
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
