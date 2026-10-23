@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useToasts } from '../hooks/useToasts'
 
 interface InvestorProps {
   pool: any
@@ -6,8 +7,24 @@ interface InvestorProps {
 }
 
 export default function InvestorView({ pool, wallet }: InvestorProps) {
+  const { addToast } = useToasts()
   const [depositAmount, setDepositAmount] = useState('')
   const [withdrawing, setWithdrawing] = useState(false)
+
+  const parseDeposit = (value: string): number | null => {
+    const num = parseFloat(value)
+    if (!isFinite(num) || num <= 0) return null
+    return num
+  }
+
+  const handleDeposit = () => {
+    const amount = parseDeposit(depositAmount)
+    if (!amount) {
+      addToast('Enter a valid deposit amount greater than 0', 'error')
+      return
+    }
+    addToast(`Queued deposit of ${amount.toFixed(2)} mUSD`, 'success')
+  }
 
   if (!wallet.connected) {
     return (
@@ -56,7 +73,7 @@ export default function InvestorView({ pool, wallet }: InvestorProps) {
             onChange={(e) => setDepositAmount(e.target.value)}
           />
         </div>
-        <button className="btn btn-primary" disabled={!depositAmount}>
+        <button className="btn btn-primary" onClick={handleDeposit}>
           Deposit
         </button>
       </div>
