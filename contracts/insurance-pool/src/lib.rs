@@ -266,6 +266,19 @@ impl InsurancePool {
             .publish((symbol_short!("admin_changed"),), (existing.admin, new_admin));
     }
 
+    pub fn set_max_farmers(env: Env, max: u32) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if max == 0 || max < farmer_count(&env) {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::MaxFarmers, &max);
+        env.events()
+            .publish((symbol_short!("max_farmers_updated"),), (max,));
+    }
+
     pub fn enroll(env: Env, farmer: Address) {
         if is_guarded(&env) {
             panic_with_error!(env, PoolError::ReentrancyDetected);
