@@ -280,7 +280,7 @@ impl InsurancePool {
 
         let token = TokenClient::new(&env, &config.token);
         let balance = token.balance(&env.current_contract_address());
-        let outstanding = liability(&env);
+        let outstanding = net_liability(&env);
         let payout = if balance >= outstanding {
             config.coverage
         } else {
@@ -300,6 +300,9 @@ impl InsurancePool {
         env.storage()
             .persistent()
             .set(&DataKey::TotalPayouts, &(total_payouts(&env) + payout));
+        env.storage()
+            .persistent()
+            .set(&DataKey::TotalClaimed, &(total_claimed(&env) + payout));
 
         let new_claimed = claimed_count(&env) + 1;
         env.storage()
