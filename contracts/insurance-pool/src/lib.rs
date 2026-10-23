@@ -266,6 +266,12 @@ impl InsurancePool {
             panic_with_error!(env, PoolError::ClaimWindowClosed);
         }
 
+        let enrolled_at = farmer_enrolled_at(&env, &farmer);
+        let min_period = min_enrollment_period(&env);
+        if min_period > 0 && enrolled_at > 0 && now.saturating_sub(enrolled_at) < min_period {
+            panic_with_error!(env, PoolError::TooSoonToClaim);
+        }
+
         let mut record: CoverageRecord = match env
             .storage()
             .persistent()
