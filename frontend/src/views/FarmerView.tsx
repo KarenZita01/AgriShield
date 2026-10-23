@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useToasts } from '../hooks/useToasts'
 
 interface FarmerProps {
   pool: any
@@ -6,7 +7,29 @@ interface FarmerProps {
 }
 
 export default function FarmerView({ pool, wallet }: FarmerProps) {
+  const { addToast } = useToasts()
   const [enrolling, setEnrolling] = useState(false)
+
+  const handleEnroll = () => {
+    if (!wallet.connected) {
+      addToast('Connect your wallet to enroll', 'error')
+      return
+    }
+    setEnrolling(true)
+    addToast('Enrollment transaction queued', 'info')
+  }
+
+  const handleClaim = () => {
+    if (!wallet.connected) {
+      addToast('Connect your wallet to claim', 'error')
+      return
+    }
+    if (pool.state !== 1) {
+      addToast('Pool is not triggered yet', 'error')
+      return
+    }
+    addToast('Payout claim queued', 'info')
+  }
 
   if (!wallet.connected) {
     return (
@@ -56,7 +79,7 @@ export default function FarmerView({ pool, wallet }: FarmerProps) {
         <button
           className="btn btn-primary"
           disabled={enrolling}
-          onClick={() => setEnrolling(true)}
+          onClick={handleEnroll}
         >
           {enrolling ? 'Enrolling...' : 'Enroll Now (1 mUSD)'}
         </button>
@@ -85,8 +108,8 @@ export default function FarmerView({ pool, wallet }: FarmerProps) {
         <p className="text-sm text-muted mb-2">
           If the pool is triggered by a weather breach, claim your payout here.
         </p>
-        <button className="btn btn-outline" disabled>
-          Claim Payout (Pool not triggered)
+        <button className="btn btn-outline" onClick={handleClaim}>
+          Claim Payout ({pool.state === 1 ? 'Triggered' : 'Pool not triggered'})
         </button>
       </div>
     </div>
