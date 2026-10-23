@@ -53,7 +53,15 @@ async function main() {
   console.log(`Lat: ${config.latitude}, Lon: ${config.longitude}`)
   console.log(`Poll interval: ${config.pollIntervalMs}ms`)
   await poll()
-  setInterval(poll, config.pollIntervalMs)
+  const interval = setInterval(poll, config.pollIntervalMs)
+
+  const shutdown = () => {
+    console.log('Shutting down oracle...')
+    clearInterval(interval)
+    process.exit(0)
+  }
+  process.on('SIGINT', shutdown)
+  process.on('SIGTERM', shutdown)
 }
 
 main()
