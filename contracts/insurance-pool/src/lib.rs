@@ -411,6 +411,9 @@ impl InsurancePool {
             panic_with_error!(env, PoolError::UnauthorizedOracle);
         }
         oracle.require_auth();
+        env.storage()
+            .persistent()
+            .set(&DataKey::LastOracleSubmit(&oracle), &env.ledger().timestamp());
 
         let now = env.ledger().timestamp();
         if timestamp > now {
@@ -418,6 +421,10 @@ impl InsurancePool {
         }
         if timestamp < config.window_start || timestamp > config.window_end {
             panic_with_error!(env, PoolError::OutsideWindow);
+        }
+        let last_submit = last_oracle_submit(&env, &oracle);
+        if now.saturating_sub(last_submit) < 60 {
+            panic_with_error!(env, PoolError::OracleCooldown);
         }
         if value < 0 {
             panic_with_error!(env, PoolError::InvalidReading);
