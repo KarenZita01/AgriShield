@@ -31,6 +31,29 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
 
   return (
     <div>
+      {pool.error && (
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Pool Data Error</span>
+          </div>
+          <p className="text-sm text-danger">{pool.error}</p>
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={() => pool.refresh()}
+            style={{ marginTop: 8 }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+      {pool.loading && (
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Loading pool data...</span>
+          </div>
+        </div>
+      )}
+      {!pool.loading && !pool.error && (
       <div className="card">
         <div className="card-header">
           <span className="card-title">Pool Status</span>
@@ -102,6 +125,7 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }
