@@ -26,6 +26,15 @@ export default function InvestorView({ pool, wallet }: InvestorProps) {
     addToast(`Queued deposit of ${amount.toFixed(2)} mUSD`, 'success')
   }
 
+  const handleWithdraw = () => {
+    if (!wallet.connected) {
+      addToast('Connect your wallet to withdraw', 'error')
+      return
+    }
+    setWithdrawing(true)
+    addToast('Withdrawal transaction queued', 'info')
+  }
+
   if (!wallet.connected) {
     return (
       <div className="empty-state">
@@ -101,7 +110,7 @@ export default function InvestorView({ pool, wallet }: InvestorProps) {
         <button
           className="btn btn-outline"
           disabled={withdrawing}
-          onClick={() => setWithdrawing(true)}
+          onClick={handleWithdraw}
         >
           {withdrawing ? 'Withdrawing...' : 'Withdraw'}
         </button>
