@@ -14,6 +14,14 @@ export default function FeedbackView() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!name.trim() || !email.trim()) {
+      alert('Name and email are required')
+      return
+    }
+    if (rating < 1) {
+      alert('Please select a product rating')
+      return
+    }
     // Store feedback locally
     const feedback = {
       name, email, walletAddress, rating, easeOfUse, reliability, improvements,
