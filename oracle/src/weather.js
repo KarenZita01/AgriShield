@@ -1,4 +1,11 @@
 export async function fetchWeather(latitude, longitude, retries = 3) {
+  if (Number.isNaN(latitude) || latitude < -90 || latitude > 90) {
+    throw new Error(`Invalid latitude: ${latitude}`)
+  }
+  if (Number.isNaN(longitude) || longitude < -180 || longitude > 180) {
+    throw new Error(`Invalid longitude: ${longitude}`)
+  }
+
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=rain&timezone=Africa/Lagos`
 
   for (let attempt = 1; attempt <= retries; attempt++) {
