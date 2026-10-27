@@ -1,4 +1,7 @@
+import { getConfig } from '../config'
+
 export default function AboutView() {
+  const config = getConfig()
   return (
     <div>
       <div className="card">
@@ -36,11 +39,11 @@ export default function AboutView() {
         </div>
         <div className="input-group">
           <label>Insurance Pool</label>
-          <input className="input" readOnly value="CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G" style={{ fontSize: '0.7rem' }} />
+          <input className="input" readOnly value={config.poolContractId || 'CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G'} style={{ fontSize: '0.7rem' }} />
         </div>
         <div className="input-group">
           <label>MicroUSD Token</label>
-          <input className="input" readOnly value="CCXCW2SCJB4E6FOKAP6MTASQE4CL2QOYHWUILTYIE6JQRMY7KALKURWU" style={{ fontSize: '0.7rem' }} />
+          <input className="input" readOnly value={config.tokenContractId || 'CCXCW2SCJB4E6FOKAP6MTASQE4CL2QOYHWUILTYIE6JQRMY7KALKURWU'} style={{ fontSize: '0.7rem' }} />
         </div>
       </div>
 
