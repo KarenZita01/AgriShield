@@ -273,6 +273,20 @@ impl InsurancePool {
             .publish((symbol_short!("admin_changed"),), (existing.admin, new_admin));
     }
 
+    pub fn set_window(env: Env, window_start: u64, window_end: u64) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if window_end <= window_start {
+            panic_with_error!(env, PoolError::InvalidWindow);
+        }
+        let mut updated = existing;
+        updated.window_start = window_start;
+        updated.window_end = window_end;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("window_updated"),), (window_start, window_end));
+    }
+
     pub fn set_max_farmers(env: Env, max: u32) {
         let existing = get_config(&env);
         existing.admin.require_auth();
