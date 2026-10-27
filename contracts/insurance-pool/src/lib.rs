@@ -354,6 +354,9 @@ impl InsurancePool {
     pub fn claim_payout(env: Env, farmer: Address) {
         farmer.require_auth();
         let config = get_config(&env);
+        if is_blacklisted(&env, &farmer) {
+            panic_with_error!(env, PoolError::Blacklisted);
+        }
         if is_paused(&env) {
             panic_with_error!(env, PoolError::Paused);
         }
