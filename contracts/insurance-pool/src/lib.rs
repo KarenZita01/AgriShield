@@ -727,8 +727,28 @@ impl InsurancePool {
         crate::storage::liability(&env)
     }
 
+    pub fn total_liquidity(env: Env) -> i128 {
+        crate::storage::total_liquidity(&env)
+    }
+
+    pub fn total_premiums(env: Env) -> i128 {
+        crate::storage::total_premiums(&env)
+    }
+
+    pub fn total_payouts(env: Env) -> i128 {
+        crate::storage::total_payouts(&env)
+    }
+
     pub fn total_claimed(env: Env) -> i128 {
-        total_claimed(&env)
+        crate::storage::total_claimed(&env)
+    }
+
+    pub fn farmer_count(env: Env) -> u32 {
+        crate::storage::farmer_count(&env)
+    }
+
+    pub fn claimed_count(env: Env) -> u32 {
+        crate::storage::claimed_count(&env)
     }
 
     pub fn net_liability(env: Env) -> i128 {
