@@ -327,6 +327,7 @@ body {
 
 .text-sm { font-size: 0.8rem; }
 .text-muted { color: var(--color-text-muted); }
+.text-danger { color: var(--color-danger); }
 .text-center { text-align: center; }
 .mt-2 { margin-top: 8px; }
 .mt-4 { margin-top: 16px; }

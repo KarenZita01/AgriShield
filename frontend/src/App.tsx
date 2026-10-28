@@ -3,6 +3,7 @@ import { WalletProvider, useWallet } from './hooks/WalletProvider'
 import { usePool } from './hooks/usePool'
 import { useToasts, ToastProvider } from './hooks/useToasts'
 import { initAnalytics, initErrorMonitoring, trackPageView, trackEvent } from './lib/analytics'
+import { getConfig } from './config'
 import DashboardView from './views/DashboardView'
 import FarmerView from './views/FarmerView'
 import InvestorView from './views/InvestorView'
@@ -17,6 +18,8 @@ function AppContent() {
   const [tab, setTab] = useState<Tab>('dashboard')
   const wallet = useWallet()
   const pool = usePool()
+  const config = getConfig()
+  const notConfigured = !config.poolContractId || !config.tokenContractId
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
@@ -40,6 +43,18 @@ function AppContent() {
         </div>
         <WalletButton />
       </header>
+
+      {notConfigured && (
+        <div className="card" style={{ marginBottom: 12 }}>
+          <div className="card-header">
+            <span className="card-title">Configuration Required</span>
+          </div>
+          <p className="text-sm text-danger">
+            Pool or token contract not configured. Set VITE_POOL_CONTRACT_ID and
+            VITE_TOKEN_CONTRACT_ID, or save them in Settings.
+          </p>
+        </div>
+      )}
 
       <main className="main">
         {tab === 'dashboard' && <DashboardView pool={pool} wallet={wallet} />}
