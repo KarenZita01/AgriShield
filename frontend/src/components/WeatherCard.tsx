@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 interface WeatherData {
   temperature: number
@@ -10,32 +10,38 @@ interface WeatherData {
 export default function WeatherCard() {
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchWeather = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(
+        'https://api.open-meteo.com/v1/forecast?latitude=10.495&longitude=7.527&current=temperature_2m,relative_humidity_2m,rain&timezone=Africa/Lagos'
+      )
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      if (data.current) {
+        setWeather({
+          temperature: data.current.temperature_2m,
+          humidity: data.current.relative_humidity_2m,
+          rainfall: data.current.rain,
+          timestamp: data.current.time,
+        })
+      }
+    } catch (err) {
+      console.error('Weather fetch failed:', err)
+      setError(err instanceof Error ? err.message : 'Weather fetch failed')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        const res = await fetch(
-          'https://api.open-meteo.com/v1/forecast?latitude=10.495&longitude=7.527&current=temperature_2m,relative_humidity_2m,rain&timezone=Africa/Lagos'
-        )
-        const data = await res.json()
-        if (data.current) {
-          setWeather({
-            temperature: data.current.temperature_2m,
-            humidity: data.current.relative_humidity_2m,
-            rainfall: data.current.rain,
-            timestamp: data.current.time,
-          })
-        }
-      } catch (err) {
-        console.error('Weather fetch failed:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchWeather()
     const interval = setInterval(fetchWeather, 600000) // every 10 min
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchWeather])
 
   if (loading) {
     return (
@@ -50,7 +56,12 @@ export default function WeatherCard() {
       <div className="card">
         <div className="empty-state">
           <div className="empty-state-icon">🌤️</div>
-          <p className="text-sm text-muted">Weather data unavailable</p>
+          <p className="text-sm text-muted">{error || 'Weather data unavailable'}</p>
+          {!loading && (
+            <button className="btn btn-outline btn-sm" onClick={fetchWeather} style={{ marginTop: 8 }}>
+              Refresh
+            </button>
+          )}
         </div>
       </div>
     )
@@ -82,6 +93,14 @@ export default function WeatherCard() {
             </div>
           </div>
         </div>
-    </div>
+        {error && (
+          <p className="text-xs text-danger text-center" style={{ marginTop: 8 }}>
+            {error}
+          </p>
+        )}
+        <button className="btn btn-outline btn-sm" onClick={fetchWeather} style={{ marginTop: 8, width: 'auto' }}>
+          Refresh
+        </button>
+      </div>
   )
 }
