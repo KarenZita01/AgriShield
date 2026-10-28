@@ -17,4 +17,13 @@ export function validateConfig() {
   if (missing.length > 0) {
     throw new Error(`Missing required config: ${missing.join(', ')}`)
   }
+  if (config.threshold < 0) {
+    throw new Error(`Invalid threshold: ${config.threshold} (must be >= 0)`)
+  }
+  if (config.tolerance < 0) {
+    throw new Error(`Invalid tolerance: ${config.tolerance} (must be >= 0)`)
+  }
+  if (config.pollIntervalMs < 1000) {
+    throw new Error(`Invalid poll interval: ${config.pollIntervalMs}ms (must be >= 1000ms)`)
+  }
 }
