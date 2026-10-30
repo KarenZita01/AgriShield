@@ -14,8 +14,16 @@ export function toScaled(value) {
 }
 
 export function checkAgreement(oracleA, oracleB, tolerance) {
+  if (tolerance < 0) {
+    throw new Error(`checkAgreement: tolerance must be >= 0, got ${tolerance}`)
+  }
   const diff = oracleA > oracleB ? oracleA - oracleB : oracleB - oracleA
-  // tolerance is in mm (same units as the raw weather value), so scale it
-  // before comparing against the already-scaled oracleA/oracleB values.
   return diff <= toScaled(tolerance)
+}
+
+export function isBreach(value, threshold) {
+  if (!Number.isFinite(value) || !Number.isFinite(threshold)) {
+    throw new Error(`isBreach: value and threshold must be finite`)
+  }
+  return value <= threshold
 }

@@ -15,7 +15,10 @@ export async function fetchWeather(latitude, longitude, retries = 3) {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
     try {
-      const res = await fetch(url, { signal: controller.signal })
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'agrishield-oracle/1.0' },
+      })
       clearTimeout(timeout)
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`)

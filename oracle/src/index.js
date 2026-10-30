@@ -1,12 +1,15 @@
 import { config, validateConfig } from './config.js'
 import { fetchWeather } from './weather.js'
-import { deriveReadingId, toScaled } from './lib.js'
+import { deriveReadingId, toScaled, checkAgreement, isBreach } from './lib.js'
 import { Keypair, SorobanRpc, Contract, Address, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 
 const SUBMIT_RETRY = 3
 let consecutiveFailures = 0
 const CIRCUIT_BREAKER_THRESHOLD = 5
 let lastSubmittedReadingId = null
+let isPolling = false
+let shutdownRequested = false
+const metrics = { submissions: 0, successes: 0, failures: 0, duplicates: 0, circuitBreakerOpens: 0 }
 
 function log(level, message, meta = {}) {
   console.log(JSON.stringify({ level, timestamp: new Date().toISOString(), message, ...meta }))
@@ -36,10 +39,12 @@ async function simulateSubmit(sourceKeypair, readingId, timestamp, value) {
 
 async function submitReading(readingId, timestamp, value) {
   if (consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD) {
+    metrics.circuitBreakerOpens++
     log('WARN', 'Circuit breaker open, skipping submission', { consecutiveFailures })
     return { status: 'CIRCUIT_BREAKER_OPEN' }
   }
   if (lastSubmittedReadingId === readingId) {
+    metrics.duplicates++
     log('INFO', 'Duplicate reading id skipped', { readingId })
     return { status: 'DUPLICATE' }
   }
@@ -70,6 +75,8 @@ async function submitReading(readingId, timestamp, value) {
       const result = await server.sendTransaction(tx)
       log('INFO', 'Reading submitted', { readingId, tx: result.hash, status: result.status })
       consecutiveFailures = 0
+      metrics.submissions++
+      metrics.successes++
       lastSubmittedReadingId = readingId
       if (result.status === 'ERROR') {
         log('ERROR', 'Transaction error', { resultXdr: result.resultXdr })
@@ -82,22 +89,53 @@ async function submitReading(readingId, timestamp, value) {
     }
   }
   consecutiveFailures++
+  metrics.submissions++
+  metrics.failures++
   log('ERROR', 'Reading submission failed after retries', { readingId, error: lastErr.message })
   throw lastErr
 }
 
 async function poll() {
+  if (isPolling) {
+    log('WARN', 'Previous poll still in flight, skipping')
+    return
+  }
+  isPolling = true
   try {
     log('INFO', 'Fetching weather')
     const weather = await fetchWeather(config.latitude, config.longitude)
     log('INFO', 'Weather fetched', { rainfall: weather.rainfall, threshold: config.threshold })
     const readingId = deriveReadingId(weather.timestamp)
+    const rawMm = weather.rainfall / 10_000_000
     const scaledValue = toScaled(weather.rainfall)
+    log('INFO', 'Derived reading', { readingId: readingId.toString(), rawMm, scaledValue: scaledValue.toString(), breach: isBreach(weather.rainfall, config.threshold) })
     await submitReading(readingId, weather.timestamp, scaledValue)
   } catch (err) {
     log('ERROR', 'Poll error', { error: err.message })
+    } finally {
+      isPolling = false
+      process.emit('poll-done')
+      if (shutdownRequested) {
+        log('INFO', 'Shutdown requested, exiting after poll')
+        process.exit(0)
+      }
+    }
+}
+
+export function getMetrics() {
+  return { ...metrics }
+}
+
+export function healthcheck() {
+  return {
+    status: consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD ? 'degraded' : 'ok',
+    circuitBreakerOpen: consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD,
+    consecutiveFailures,
+    metrics: getMetrics(),
   }
 }
+
+export { poll }
 
 async function main() {
   validateConfig()
@@ -111,7 +149,13 @@ async function main() {
   const shutdown = () => {
     console.log('Shutting down oracle...')
     clearInterval(interval)
-    process.exit(0)
+    const forceExit = setTimeout(() => process.exit(1), 10000)
+    const graceful = () => {
+      clearTimeout(forceExit)
+      process.exit(0)
+    }
+    if (!isPolling) graceful()
+    else process.once('poll-done', graceful)
   }
   process.on('SIGINT', shutdown)
   process.on('SIGTERM', shutdown)

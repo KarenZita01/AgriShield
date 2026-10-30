@@ -29,6 +29,9 @@ export function validateConfig() {
   if (config.oracleSecretKey.length < 32) {
     throw new Error('Invalid oracleSecretKey: expected a Stellar secret seed (>=32 chars)')
   }
+  if (config.tokenContractId && !config.tokenContractId.startsWith('C')) {
+    throw new Error(`Invalid tokenContractId: ${config.tokenContractId} (must start with C)`)
+  }
   if (config.threshold < 0) {
     throw new Error(`Invalid threshold: ${config.threshold} (must be >= 0)`)
   }
