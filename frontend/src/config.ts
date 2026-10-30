@@ -29,3 +29,13 @@ export function getConfig(): AppConfig {
     sentryDsn: import.meta.env.VITE_SENTRY_DSN || defaultConfig.sentryDsn,
   }
 }
+
+export function validateConfig(config: AppConfig): string[] {
+  const errors: string[] = []
+  if (!config.rpcUrl) errors.push('RPC URL is required')
+  if (!config.poolContractId) errors.push('Pool contract ID is required')
+  if (!config.tokenContractId) errors.push('Token contract ID is required')
+  if (!config.poolContractId.startsWith('C')) errors.push('Pool contract ID must start with C')
+  if (!config.tokenContractId.startsWith('C')) errors.push('Token contract ID must start with C')
+  return errors
+}

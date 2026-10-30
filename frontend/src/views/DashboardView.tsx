@@ -32,7 +32,7 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
   return (
     <div>
       {pool.error && (
-        <div className="card">
+        <div className="card" role="alert" aria-label="Pool data error">
           <div className="card-header">
             <span className="card-title">Pool Data Error</span>
           </div>
@@ -40,6 +40,7 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
           <button
             className="btn btn-outline btn-sm"
             onClick={() => pool.refresh()}
+            aria-label="Retry fetching pool data"
             style={{ marginTop: 8 }}
           >
             Retry
@@ -47,7 +48,7 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
         </div>
       )}
       {pool.loading && (
-        <div className="card">
+        <div className="card" aria-label="Loading pool data" role="status">
           <div className="card-header">
             <span className="card-title">Loading pool data...</span>
           </div>
@@ -107,6 +108,7 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
                 }
                 addToast('Opening farmer enrollment...', 'info')
               }}
+              aria-label="Enroll as farmer"
             >
               Enroll as Farmer
             </button>
@@ -120,6 +122,7 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
                 }
                 addToast('Opening liquidity deposit...', 'info')
               }}
+              aria-label="Provide liquidity"
             >
               Provide Liquidity
             </button>

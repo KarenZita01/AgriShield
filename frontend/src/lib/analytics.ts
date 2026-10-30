@@ -87,28 +87,34 @@ function capture(event: string, properties?: Record<string, any>) {
 
 // Track custom events
 export function trackEvent(event: string, properties?: Record<string, any>) {
+  if (!posthogReady) return
   capture(event, properties)
 }
 
 // Track page views
 export function trackPageView(page: string) {
+  if (!posthogReady) return
   capture('page_viewed', { page })
 }
 
 // Track user actions
 export function trackWalletConnected(address: string) {
+  if (!posthogReady) return
   capture('wallet_connected', { address: address.slice(0, 6) + '...' })
 }
 
 export function trackFarmerEnrolled(address: string) {
+  if (!posthogReady) return
   capture('farmer_enrolled', { address: address.slice(0, 6) + '...' })
 }
 
 export function trackLiquidityDeposited(amount: string) {
+  if (!posthogReady) return
   capture('liquidity_deposited', { amount })
 }
 
 export function trackPayoutClaimed(amount: string) {
+  if (!posthogReady) return
   capture('payout_claimed', { amount })
 }
 

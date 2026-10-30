@@ -67,8 +67,8 @@ export default function FarmerView({ pool, wallet }: FarmerProps) {
             </div>
           </div>
           <div>
-            <div className="stat-label">Claim</div>
-            <div className="stat-value text-sm">—</div>
+            <div className="stat-label" aria-label="Claim status">Claim</div>
+            <div className="stat-value text-sm" aria-label="Claim status">—</div>
           </div>
         </div>
       </div>
@@ -96,12 +96,12 @@ export default function FarmerView({ pool, wallet }: FarmerProps) {
         </div>
         <div className="stat-grid">
           <div>
-            <div className="stat-label">Current Rainfall</div>
-            <div className="stat-value text-sm">— mm</div>
+            <div className="stat-label" aria-label="Current rainfall">Current Rainfall</div>
+            <div className="stat-value text-sm" aria-label="Current rainfall">— mm</div>
           </div>
           <div>
-            <div className="stat-label">Threshold</div>
-            <div className="stat-value text-sm">≤50mm</div>
+            <div className="stat-label" aria-label="Rainfall threshold">Threshold</div>
+            <div className="stat-value text-sm" aria-label="Rainfall threshold">≤50mm</div>
           </div>
         </div>
       </div>

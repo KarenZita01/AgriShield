@@ -78,20 +78,20 @@ export default function WeatherCard() {
       </div>
         <div className="stat-grid">
           <div>
-            <div className="stat-label">Temperature</div>
-            <div className="stat-value">{weather.temperature}°C</div>
+            <div className="stat-label" aria-label="Temperature">Temperature</div>
+            <div className="stat-value" aria-label="Temperature">{weather.temperature}°C</div>
           </div>
           <div>
-            <div className="stat-label">Humidity</div>
-            <div className="stat-value">{weather.humidity}%</div>
+            <div className="stat-label" aria-label="Humidity">Humidity</div>
+            <div className="stat-value" aria-label="Humidity">{weather.humidity}%</div>
           </div>
           <div>
-            <div className="stat-label">Rainfall</div>
-            <div className="stat-value">{weather.rainfall} mm</div>
+            <div className="stat-label" aria-label="Rainfall">Rainfall</div>
+            <div className="stat-value" aria-label="Rainfall">{weather.rainfall} mm</div>
           </div>
           <div>
-            <div className="stat-label">Status</div>
-            <div className={`stat-value ${weather.rainfall <= 50 ? 'text-danger' : ''}`}>
+            <div className="stat-label" aria-label="Rainfall status">Status</div>
+            <div className={`stat-value ${weather.rainfall <= 50 ? 'text-danger' : ''}`} aria-label={weather.rainfall <= 50 ? 'Below threshold' : 'Safe'}>
               {weather.rainfall <= 50 ? '⚠️ Below' : '✅ Safe'}
             </div>
           </div>

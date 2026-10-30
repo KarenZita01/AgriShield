@@ -58,12 +58,12 @@ export default function InvestorView({ pool, wallet }: InvestorProps) {
         </div>
         <div className="stat-grid">
           <div>
-            <div className="stat-label">Deposited</div>
-            <div className="stat-value">0.00 mUSD</div>
+            <div className="stat-label" aria-label="Deposited amount">Deposited</div>
+            <div className="stat-value" aria-label="Deposited amount">0.00 mUSD</div>
           </div>
           <div>
-            <div className="stat-label">Share</div>
-            <div className="stat-value text-sm">0%</div>
+            <div className="stat-label" aria-label="Pool share">Share</div>
+            <div className="stat-value text-sm" aria-label="Pool share">0%</div>
           </div>
         </div>
       </div>
