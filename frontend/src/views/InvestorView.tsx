@@ -100,6 +100,10 @@ export default function InvestorView({ pool, wallet }: InvestorProps) {
             <div className="stat-label">Solvency</div>
             <div className="stat-value text-sm">{(pool.solvencyRatio / 100).toFixed(0)}%</div>
           </div>
+          <div>
+            <div className="stat-label">Pool Balance</div>
+            <div className="stat-value text-sm">{pool.poolBalance !== undefined ? ((pool.poolBalance as number) / 10_000_000).toFixed(2) : '0.00'} mUSD</div>
+          </div>
         </div>
       </div>
 

@@ -67,6 +67,7 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
           <Stat label="Claims" value={pool.claimedCount} icon="📋" />
           <Stat label="Liquidity" value={`${formatAmount(pool.totalLiquidity)} mUSD`} icon="💧" />
           <Stat label="Premiums" value={`${formatAmount(pool.totalPremiums)} mUSD`} icon="💵" />
+          <Stat label="Net Liability" value={`${formatAmount(pool.netLiability ?? '0')} mUSD`} icon="⚖️" />
         </div>
 
         <div className="mt-4">

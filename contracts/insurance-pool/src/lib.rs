@@ -797,6 +797,62 @@ impl InsurancePool {
         crate::storage::farmer_count(&env)
     }
 
+    pub fn solvency_percent(env: Env) -> u32 {
+        let outstanding = liability(&env);
+        if outstanding <= 0 {
+            return 10_000;
+        }
+        let config = get_config(&env);
+        let token = TokenClient::new(&env, &config.token);
+        let held = token.balance(&env.current_contract_address());
+        (held * 10_000 / outstanding) as u32
+    }
+
+    pub fn is_oracle_authorized(env: Env, addr: Address) -> bool {
+        let c = get_config(&env);
+        addr == c.oracle_a || addr == c.oracle_b
+    }
+
+    pub fn config_admin(env: Env) -> Address {
+        get_config(&env).admin
+    }
+
+    pub fn token_address(env: Env) -> Address {
+        get_config(&env).token
+    }
+
+    pub fn region(env: Env) -> Symbol {
+        get_config(&env).region
+    }
+
+    pub fn min_enrollment_period_read(env: Env) -> u64 {
+        crate::storage::min_enrollment_period(&env)
+    }
+
+    pub fn liquidity_lock_period_read(env: Env) -> u64 {
+        crate::storage::liquidity_lock_period(&env)
+    }
+
+    pub fn is_blacklisted_read(env: Env, addr: Address) -> bool {
+        crate::storage::is_blacklisted(&env, &addr)
+    }
+
+    pub fn is_guarded_read(env: Env) -> bool {
+        crate::storage::is_guarded(&env)
+    }
+
+    pub fn last_oracle_submit_read(env: Env, addr: Address) -> u64 {
+        crate::storage::last_oracle_submit(&env, &addr)
+    }
+
+    pub fn last_deposit_read(env: Env, addr: Address) -> u64 {
+        crate::storage::last_deposit(&env, &addr)
+    }
+
+    pub fn contract_version_read(env: Env) -> u32 {
+        crate::storage::contract_version(&env)
+    }
+
     pub fn config_read(env: Env) -> (Address, Address, Address, Address, Symbol, i64, i64, u32, i128, i128, i128, u64, u64, i128, u64, i128) {
         let c = get_config(&env);
         (c.admin, c.oracle_a, c.oracle_b, c.token, c.region, c.latitude, c.longitude, c.metric, c.threshold, c.premium, c.coverage, c.window_start, c.window_end, c.min_liquidity, c.payout_window, c.tolerance)
