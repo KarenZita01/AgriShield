@@ -9,9 +9,9 @@ export default function Stat({ label, value, icon }: StatProps) {
     <div>
       <div className="flex items-center gap-2">
         {icon && <span>{icon}</span>}
-        <span className="stat-label" title={String(label)}>{label}</span>
+        <span className="stat-label" aria-label={String(label)} title={String(label)}>{label}</span>
       </div>
-      <div className="stat-value" title={String(value)}>{value}</div>
+      <div className="stat-value" aria-label={String(value)} title={String(value)}>{value}</div>
     </div>
   )
 }

@@ -10,6 +10,7 @@ export default function InvestorView({ pool, wallet }: InvestorProps) {
   const { addToast } = useToasts()
   const [depositAmount, setDepositAmount] = useState('')
   const [withdrawing, setWithdrawing] = useState(false)
+  const [depositing, setDepositing] = useState(false)
 
   const parseDeposit = (value: string): number | null => {
     const num = parseFloat(value)
@@ -23,7 +24,9 @@ export default function InvestorView({ pool, wallet }: InvestorProps) {
       addToast('Enter a valid deposit amount greater than 0', 'error')
       return
     }
+    setDepositing(true)
     addToast(`Queued deposit of ${amount.toFixed(2)} mUSD`, 'success')
+    setTimeout(() => setDepositing(false), 1500)
   }
 
   const handleWithdraw = () => {
@@ -80,10 +83,13 @@ export default function InvestorView({ pool, wallet }: InvestorProps) {
             placeholder="0.00"
             value={depositAmount}
             onChange={(e) => setDepositAmount(e.target.value)}
+            aria-label="Deposit amount in mUSD"
+            min="0"
+            step="0.01"
           />
         </div>
-        <button className="btn btn-primary" onClick={handleDeposit}>
-          Deposit
+        <button className="btn btn-primary" disabled={depositing || !parseDeposit(depositAmount)} onClick={handleDeposit} aria-label="Deposit liquidity">
+          {depositing ? 'Depositing...' : 'Deposit'}
         </button>
       </div>
 
@@ -115,6 +121,7 @@ export default function InvestorView({ pool, wallet }: InvestorProps) {
           className="btn btn-outline"
           disabled={withdrawing}
           onClick={handleWithdraw}
+          aria-label="Withdraw liquidity"
         >
           {withdrawing ? 'Withdrawing...' : 'Withdraw'}
         </button>

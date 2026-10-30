@@ -69,11 +69,11 @@ export default function FeedbackView() {
         <div className="card">
         <div className="input-group">
           <label>Name *</label>
-          <input className="input" required value={name} onChange={e => setName(e.target.value)} autoComplete="off" />
+          <input className="input" required value={name} onChange={e => setName(e.target.value)} autoComplete="off" aria-label="Your name" />
         </div>
           <div className="input-group">
             <label>Email *</label>
-            <input className="input" type="email" required value={email} onChange={e => setEmail(e.target.value)} autoComplete="off" />
+            <input className="input" type="email" required value={email} onChange={e => setEmail(e.target.value)} autoComplete="off" aria-label="Your email" />
           </div>
           <div className="input-group">
           <label>Wallet Address</label>
@@ -91,6 +91,8 @@ export default function FeedbackView() {
                   type="button"
                   className={`btn btn-sm ${rating >= n ? 'btn-primary' : 'btn-outline'}`}
                   onClick={() => setRating(n)}
+                  aria-label={`Rate ${n} of 5`}
+                  aria-pressed={rating >= n}
                 >
                   {n}
                 </button>

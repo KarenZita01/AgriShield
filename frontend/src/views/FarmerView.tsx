@@ -51,18 +51,18 @@ export default function FarmerView({ pool, wallet }: FarmerProps) {
         </div>
         <div className="stat-grid">
           <div>
-            <div className="stat-label">Status</div>
-            <div className="stat-value text-sm">Not Enrolled</div>
+            <div className="stat-label" aria-label="Coverage status">Status</div>
+            <div className="stat-value text-sm" aria-label="Not enrolled">Not Enrolled</div>
           </div>
           <div>
-            <div className="stat-label">Premium</div>
-            <div className="stat-value text-sm">
+            <div className="stat-label" aria-label="Premium amount">Premium</div>
+            <div className="stat-value text-sm" aria-label="Premium">
               {pool.premium !== undefined ? ((pool.premium as number) / 10_000_000).toFixed(2) : '1.00'} mUSD
             </div>
           </div>
           <div>
-            <div className="stat-label">Coverage</div>
-            <div className="stat-value text-sm">
+            <div className="stat-label" aria-label="Coverage amount">Coverage</div>
+            <div className="stat-value text-sm" aria-label="Coverage">
               {pool.coverage !== undefined ? ((pool.coverage as number) / 10_000_000).toFixed(2) : '50.00'} mUSD
             </div>
           </div>
@@ -84,6 +84,7 @@ export default function FarmerView({ pool, wallet }: FarmerProps) {
           className="btn btn-primary"
           disabled={enrolling}
           onClick={handleEnroll}
+          aria-label="Enroll as farmer"
         >
           {enrolling ? 'Enrolling...' : 'Enroll Now (1 mUSD)'}
         </button>
@@ -112,7 +113,7 @@ export default function FarmerView({ pool, wallet }: FarmerProps) {
         <p className="text-sm text-muted mb-2">
           If the pool is triggered by a weather breach, claim your payout here.
         </p>
-        <button className="btn btn-outline" onClick={handleClaim}>
+        <button className="btn btn-outline" onClick={handleClaim} aria-label="Claim payout">
           Claim Payout ({pool.state === 1 ? 'Triggered' : 'Pool not triggered'})
         </button>
       </div>

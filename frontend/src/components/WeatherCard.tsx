@@ -11,8 +11,10 @@ export default function WeatherCard() {
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   const fetchWeather = useCallback(async () => {
+    setRefreshing(true)
     setLoading(true)
     setError(null)
     try {
@@ -34,6 +36,7 @@ export default function WeatherCard() {
       setError(err instanceof Error ? err.message : 'Weather fetch failed')
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }, [])
 
@@ -57,8 +60,8 @@ export default function WeatherCard() {
         <div className="empty-state">
           <div className="empty-state-icon">🌤️</div>
           <p className="text-sm text-muted">{error || 'Weather data unavailable'}</p>
-          {!loading && (
-            <button className="btn btn-outline btn-sm" onClick={fetchWeather} style={{ marginTop: 8 }}>
+          {!loading && !refreshing && (
+            <button className="btn btn-outline btn-sm" onClick={fetchWeather} aria-label="Refresh weather" style={{ marginTop: 8 }}>
               Refresh
             </button>
           )}
@@ -70,7 +73,7 @@ export default function WeatherCard() {
   return (
     <div className="card">
       <div className="card-header">
-        <span className="card-title">Weather — Kaduna</span>
+        <span className="card-title" aria-label="Weather card for Kaduna">Weather — Kaduna</span>
         <span className="text-sm text-muted">Live</span>
       </div>
         <div className="stat-grid">

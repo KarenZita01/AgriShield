@@ -11,11 +11,11 @@ export default function ThresholdGauge({ ratio }: ThresholdGaugeProps) {
     <div>
       <div className="flex justify-between items-center mb-2">
         <span className="text-sm text-muted">Solvency Ratio</span>
-        <span className="text-sm" style={{ fontWeight: 600 }}>
+        <span className="text-sm" style={{ fontWeight: 600 }} aria-label="Solvency ratio">
           {(ratio / 100).toFixed(1)}%
         </span>
       </div>
-      <div className="solvency-bar">
+      <div className="solvency-bar" aria-label="Solvency ratio bar" role="progressbar" aria-valuenow={Math.min(pct, 100)} aria-valuemin={0} aria-valuemax={200}>
         <div
           className={`solvency-fill ${fillClass}`}
           style={{ width: `${barWidth}%` }}
