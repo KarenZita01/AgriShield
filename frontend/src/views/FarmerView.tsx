@@ -52,7 +52,7 @@ export default function FarmerView({ pool, wallet }: FarmerProps) {
         <div className="stat-grid">
           <div>
             <div className="stat-label" aria-label="Coverage status">Status</div>
-            <div className="stat-value text-sm" aria-label="Not enrolled">Not Enrolled</div>
+            <div className="stat-value text-sm" aria-label="Not enrolled" aria-live="polite">Not Enrolled</div>
           </div>
           <div>
             <div className="stat-label" aria-label="Premium amount">Premium</div>

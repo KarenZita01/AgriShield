@@ -84,20 +84,23 @@ export default function FeedbackView() {
         <div className="card">
           <div className="input-group">
             <label>Product Rating *</label>
-            <div className="flex gap-2 mt-2">
-              {[1,2,3,4,5].map(n => (
-                <button
-                  key={n}
-                  type="button"
-                  className={`btn btn-sm ${rating >= n ? 'btn-primary' : 'btn-outline'}`}
-                  onClick={() => setRating(n)}
-                  aria-label={`Rate ${n} of 5`}
-                  aria-pressed={rating >= n}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
+            <fieldset aria-label="Product rating">
+              <legend className="text-sm font-medium mb-1">Product Rating</legend>
+              <div className="flex gap-2 mt-2">
+                {[1,2,3,4,5].map(n => (
+                  <button
+                    key={n}
+                    type="button"
+                    className={`btn btn-sm ${rating >= n ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setRating(n)}
+                    aria-label={`Rate ${n} of 5`}
+                    aria-pressed={rating >= n}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
           </div>
         </div>
 

@@ -21,9 +21,9 @@ export default function AboutView() {
         </p>
       </div>
 
-      <div className="card">
+      <div className="card" aria-label="About AgriShield description">
         <div className="card-header">
-          <span className="card-title">How It Works</span>
+          <span className="card-title">About AgriShield</span>
         </div>
         <div style={{ fontSize: '0.85rem', lineHeight: 1.8 }}>
           <p><strong>1. Deposit Liquidity:</strong> Investors provide mUSD to the pool.</p>
@@ -34,7 +34,7 @@ export default function AboutView() {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card" aria-label="Deployed contract addresses">
         <div className="card-header">
           <span className="card-title">Deployed Contracts</span>
         </div>
@@ -48,7 +48,7 @@ export default function AboutView() {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card" aria-label="External links and resources">
         <div className="card-header">
           <span className="card-title">Links</span>
         </div>

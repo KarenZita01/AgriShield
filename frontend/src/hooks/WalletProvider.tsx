@@ -21,8 +21,12 @@ export function useWallet() {
 }
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const [address, setAddress] = useState<string | null>(null)
-  const [connected, setConnected] = useState(false)
+  const [address, setAddress] = useState<string | null>(() => {
+    try { return localStorage.getItem('agrishield_wallet_address') } catch { return null }
+  })
+  const [connected, setConnected] = useState(() => {
+    try { return localStorage.getItem('agrishield_wallet_connected') === 'true' } catch { return false }
+  })
   const [loading, setLoading] = useState(false)
 
   const connect = useCallback(async () => {
@@ -32,6 +36,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       const addr = await freighter.getAddress()
       setAddress(addr)
       setConnected(true)
+      try { localStorage.setItem('agrishield_wallet_address', addr) } catch {}
+      try { localStorage.setItem('agrishield_wallet_connected', 'true') } catch {}
     } catch (err) {
       console.error('Wallet connection failed:', err)
     } finally {
@@ -42,6 +48,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const disconnect = useCallback(() => {
     setAddress(null)
     setConnected(false)
+    try { localStorage.removeItem('agrishield_wallet_address') } catch {}
+    try { localStorage.removeItem('agrishield_wallet_connected') } catch {}
   }, [])
 
   useEffect(() => {

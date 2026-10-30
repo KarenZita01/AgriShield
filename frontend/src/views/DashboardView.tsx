@@ -63,7 +63,7 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
           </span>
         </div>
 
-        <div className="stat-grid">
+        <div className="stat-grid" aria-live="polite">
           <Stat label="Farmers" value={pool.farmerCount} icon="👨‍🌾" />
           <Stat label="Claims" value={pool.claimedCount} icon="📋" />
           <Stat label="Liquidity" value={`${formatAmount(pool.totalLiquidity)} mUSD`} icon="💧" />

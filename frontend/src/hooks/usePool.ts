@@ -88,8 +88,10 @@ function scValToI128String(val: xdr.ScVal | null): string {
 
 export function usePool() {
   const [poolData, setPoolData] = useState<PoolState>(initialState)
+  const [isRefetching, setIsRefetching] = useState(false)
 
   const fetchPoolData = useCallback(async () => {
+    setIsRefetching(true)
     setPoolData(prev => ({ ...prev, loading: true, error: null }))
     try {
       const config = getConfig()
@@ -148,6 +150,8 @@ export function usePool() {
         loading: false,
         error: err instanceof Error ? err.message : 'Failed to fetch pool data',
       }))
+    } finally {
+      setIsRefetching(false)
     }
   }, [])
 
@@ -157,5 +161,5 @@ export function usePool() {
     return () => clearInterval(interval)
   }, [fetchPoolData])
 
-  return { ...poolData, refresh: fetchPoolData }
+  return { ...poolData, refresh: fetchPoolData, isRefetching }
 }

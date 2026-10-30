@@ -119,6 +119,7 @@ export function trackPayoutClaimed(amount: string) {
 }
 
 export function trackFeedbackSubmitted(rating: number) {
+  if (!posthogReady) return
   capture('feedback_submitted', { rating })
 }
 
@@ -152,6 +153,7 @@ export function initErrorMonitoring() {
 
 // Health check - ping analytics periodically
 export function startHealthCheck() {
+  if (!posthogReady) return
   if (typeof window === 'undefined') return
   setInterval(() => {
     capture('health_check', {

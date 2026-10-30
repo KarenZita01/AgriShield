@@ -40,8 +40,8 @@ function AppContent() {
 
       <header className="header">
         <div className="header-left">
-          <h1 className="logo">🌾 AgriShield</h1>
-          <span className="badge">Testnet</span>
+          <h1 className="logo" aria-label="AgriShield">🌾 AgriShield</h1>
+          <span className="badge" aria-label="Testnet">Testnet</span>
         </div>
         <WalletButton />
       </header>

@@ -71,7 +71,7 @@ export default function WeatherCard() {
   }
 
   return (
-    <div className="card">
+    <div className="card" role="region" aria-label="Live weather for Kaduna">
       <div className="card-header">
         <span className="card-title" aria-label="Weather card for Kaduna">Weather — Kaduna</span>
         <span className="text-sm text-muted">Live</span>
@@ -97,7 +97,7 @@ export default function WeatherCard() {
           </div>
         </div>
         {error && (
-          <p className="text-xs text-danger text-center" style={{ marginTop: 8 }}>
+          <p className="text-xs text-danger text-center" style={{ marginTop: 8 }} aria-live="polite">
             {error}
           </p>
         )}
