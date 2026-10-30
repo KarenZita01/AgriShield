@@ -1,6 +1,6 @@
 import { config, validateConfig } from './config.js'
 import { fetchWeather } from './weather.js'
-import { deriveReadingId, toScaled, checkAgreement, isBreach } from './lib.js'
+import { deriveReadingId, toScaled, checkAgreement, isBreach, isValidReading } from './lib.js'
 import { Keypair, SorobanRpc, Contract, Address, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 
 const SUBMIT_RETRY = config.maxSubmitRetries
@@ -8,11 +8,15 @@ let consecutiveFailures = 0
 const CIRCUIT_BREAKER_THRESHOLD = 5
 let lastSubmittedReadingId = null
 let lastSuccessfulSubmission = null
+let lastRainfallMm = null
 let isPolling = false
 let shutdownRequested = false
 const metrics = { submissions: 0, successes: 0, failures: 0, duplicates: 0, circuitBreakerOpens: 0 }
 const CIRCUIT_RESET_MS = 5 * 60 * 1000
 let circuitOpenedAt = null
+const SOURCE_ADDRESS = (() => {
+  try { return Keypair.fromSecret(config.oracleSecretKey).publicKey() } catch { return null }
+})()
 
 function log(level, message, meta = {}) {
   console.log(JSON.stringify({ level, timestamp: new Date().toISOString(), message, ...meta }))
@@ -58,6 +62,11 @@ async function submitReading(readingId, timestamp, value) {
     log('WARN', 'Non-monotonic reading id skipped', { readingId, last: lastSubmittedReadingId.toString() })
     return { status: 'DUPLICATE' }
   }
+  if (!isValidReading(value)) {
+    metrics.failures++
+    log('ERROR', 'Invalid reading value rejected', { readingId, value: value.toString() })
+    return { status: 'INVALID_READING' }
+  }
   const sourceKeypair = Keypair.fromSecret(config.oracleSecretKey)
   let lastErr
   for (let attempt = 1; attempt <= SUBMIT_RETRY; attempt++) {
@@ -91,7 +100,7 @@ async function submitReading(readingId, timestamp, value) {
         .build()
       tx.sign(sourceKeypair)
       const result = await server.sendTransaction(tx)
-      log('INFO', 'Reading submitted', { readingId, tx: result.hash, status: result.status })
+      log('INFO', 'Reading submitted', { readingId, tx: result.hash, status: result.status, source: SOURCE_ADDRESS })
       consecutiveFailures = 0
       metrics.submissions++
       metrics.successes++
@@ -128,8 +137,14 @@ async function poll() {
     const readingId = deriveReadingId(weather.timestamp)
     const rawMm = weather.rainfall / 10_000_000
     const scaledValue = toScaled(weather.rainfall)
+    if (lastRainfallMm !== null && rawMm === lastRainfallMm) {
+      metrics.duplicates++
+      log('INFO', 'Identical rainfall to last submission, skipping', { rainfall: rawMm })
+      return
+    }
     log('INFO', 'Derived reading', { readingId: readingId.toString(), rawMm, scaledValue: scaledValue.toString(), breach: isBreach(weather.rainfall, config.threshold) })
     await submitReading(readingId, weather.timestamp, scaledValue)
+    lastRainfallMm = rawMm
     log('INFO', 'Poll complete', { metrics: getMetrics() })
   } catch (err) {
     log('ERROR', 'Poll error', { error: err.message })
@@ -160,6 +175,10 @@ export function healthcheck() {
     consecutiveFailures,
     metrics: getMetrics(),
   }
+}
+
+export function isHealthy() {
+  return consecutiveFailures < CIRCUIT_BREAKER_THRESHOLD
 }
 
 export { poll }

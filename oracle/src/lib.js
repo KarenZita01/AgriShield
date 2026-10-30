@@ -43,6 +43,17 @@ export function checkAgreement(oracleA, oracleB, tolerance) {
   return isWithinTolerance(diff, toScaled(tolerance))
 }
 
+export function isValidReading(value) {
+  const num = Number(value)
+  return Number.isFinite(num) && num >= 0
+}
+
+export function clamp(value, min, max) {
+  const num = Number(value)
+  if (!Number.isFinite(num)) return min
+  return Math.min(Math.max(num, min), max)
+}
+
 export function isBreach(value, threshold) {
   if (!Number.isFinite(value) || !Number.isFinite(threshold)) {
     throw new Error(`isBreach: value and threshold must be finite`)

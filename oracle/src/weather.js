@@ -23,6 +23,10 @@ export async function fetchWeather(latitude, longitude, retries = 3) {
       if (!contentType.includes('application/json')) {
         throw new Error(`Unexpected content type: ${contentType}`)
       }
+      const contentLength = res.headers.get('content-length')
+      if (contentLength && parseInt(contentLength) > 1_000_000) {
+        throw new Error(`Response too large: ${contentLength} bytes`)
+      }
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`)
       }
