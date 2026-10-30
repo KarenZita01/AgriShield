@@ -104,7 +104,7 @@ export default function FeedbackView() {
         <div className="card">
           <div className="input-group">
             <label>How easy was it to use? *</label>
-            <select className="input" required value={easeOfUse} onChange={e => setEaseOfUse(e.target.value)}>
+            <select className="input" required value={easeOfUse} onChange={e => setEaseOfUse(e.target.value)} aria-label="Ease of use rating">
               <option value="">Select...</option>
               <option value="very_easy">Very Easy</option>
               <option value="easy">Easy</option>
@@ -115,7 +115,7 @@ export default function FeedbackView() {
           </div>
           <div className="input-group">
             <label>How reliable do you find the service? *</label>
-            <select className="input" required value={reliability} onChange={e => setReliability(e.target.value)}>
+            <select className="input" required value={reliability} onChange={e => setReliability(e.target.value)} aria-label="Service reliability rating">
               <option value="">Select...</option>
               <option value="very_reliable">Very Reliable</option>
               <option value="reliable">Reliable</option>
@@ -126,17 +126,18 @@ export default function FeedbackView() {
           </div>
           <div className="input-group">
             <label>What improvements would you suggest?</label>
-            <textarea
-              className="input"
-              rows={3}
-              value={improvements}
-              onChange={e => setImprovements(e.target.value)}
-              placeholder="Your suggestions..."
-            />
+              <textarea
+                className="input"
+                rows={3}
+                value={improvements}
+                onChange={e => setImprovements(e.target.value)}
+                placeholder="Your suggestions..."
+                aria-label="Suggested improvements"
+              />
           </div>
         </div>
 
-        <button type="submit" className="btn btn-primary" style={{ margin: '0 0 16px 0' }}>
+        <button type="submit" className="btn btn-primary" style={{ margin: '0 0 16px 0' }} aria-label="Submit feedback">
           Submit Feedback
         </button>
       </form>

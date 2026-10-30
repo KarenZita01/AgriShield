@@ -59,6 +59,7 @@ export default function SettingsView() {
             onChange={e => setRpcUrl(e.target.value)}
             placeholder="https://soroban-testnet.stellar.org"
             autoComplete="off"
+            aria-label="RPC URL"
           />
         </div>
         <div className="input-group">
@@ -69,6 +70,7 @@ export default function SettingsView() {
             onChange={e => setPoolId(e.target.value)}
             placeholder="CBIWI..."
             autoComplete="off"
+            aria-label="Pool contract ID"
           />
         </div>
         <div className="input-group">
@@ -79,14 +81,10 @@ export default function SettingsView() {
             onChange={e => setTokenId(e.target.value)}
             placeholder="CCXCW..."
             autoComplete="off"
-          />
-            className="input"
-            value={tokenId}
-            onChange={e => setTokenId(e.target.value)}
-            placeholder="CCXCW..."
+            aria-label="Token contract ID"
           />
         </div>
-        <button className="btn btn-primary" onClick={handleSave}>
+        <button className="btn btn-primary" onClick={handleSave} aria-label="Save settings">
           {saved ? 'Saved!' : 'Save Settings'}
         </button>
       </div>

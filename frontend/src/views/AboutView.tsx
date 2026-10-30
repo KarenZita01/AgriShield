@@ -8,6 +8,7 @@ export default function AboutView() {
         <img
           src="docs/screenshots/about.png"
           alt="AgriShield about diagram"
+          title="AgriShield Weather-Indexed Micro-Insurance overview diagram"
           style={{ width: '100%', maxWidth: 400, borderRadius: 12, display: 'block', margin: '0 auto 12px' }}
         />
         <div className="card-header">
@@ -39,11 +40,11 @@ export default function AboutView() {
         </div>
         <div className="input-group">
           <label>Insurance Pool</label>
-          <input className="input" readOnly value={config.poolContractId || 'CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G'} style={{ fontSize: '0.7rem' }} />
+          <input className="input" readOnly value={config.poolContractId || 'CBIWIRJXYPJYMGHS52GU3C6NJTVMNKNRFFKTGBYWQ4R3RQSNGGG6O45G'} style={{ fontSize: '0.7rem' }} aria-label="Insurance Pool contract address" />
         </div>
         <div className="input-group">
           <label>MicroUSD Token</label>
-          <input className="input" readOnly value={config.tokenContractId || 'CCXCW2SCJB4E6FOKAP6MTASQE4CL2QOYHWUILTYIE6JQRMY7KALKURWU'} style={{ fontSize: '0.7rem' }} />
+          <input className="input" readOnly value={config.tokenContractId || 'CCXCW2SCJB4E6FOKAP6MTASQE4CL2QOYHWUILTYIE6JQRMY7KALKURWU'} style={{ fontSize: '0.7rem' }} aria-label="MicroUSD Token contract address" />
         </div>
       </div>
 
@@ -52,19 +53,19 @@ export default function AboutView() {
           <span className="card-title">Links</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <a href="https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+          <a href="https://github.com/KarenZita01/Parametric-Micro-Insurance-Pool" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" aria-label="GitHub Repository (opens in new tab)">
             GitHub Repository
           </a>
-          <a href="https://stellar.org" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+          <a href="https://stellar.org" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" aria-label="Stellar Network (opens in new tab)">
             Stellar Network
           </a>
-          <a href="https://soroban.stellar.org" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+          <a href="https://soroban.stellar.org" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" aria-label="Soroban Docs (opens in new tab)">
             Soroban Docs
           </a>
-          <a href="https://freighter.app" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+          <a href="https://freighter.app" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" aria-label="Freighter Wallet (opens in new tab)">
             Freighter Wallet
           </a>
-          <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+          <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" aria-label="Open-Meteo Weather API (opens in new tab)">
             Open-Meteo Weather API
           </a>
         </div>

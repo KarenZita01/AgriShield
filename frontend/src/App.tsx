@@ -36,6 +36,8 @@ function AppContent() {
 
   return (
     <div className="app">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+
       <header className="header">
         <div className="header-left">
           <h1 className="logo">🌾 AgriShield</h1>
@@ -56,7 +58,7 @@ function AppContent() {
         </div>
       )}
 
-      <main className="main">
+      <main className="main" id="main-content">
         {tab === 'dashboard' && <DashboardView pool={pool} wallet={wallet} />}
         {tab === 'farmer' && <FarmerView pool={pool} wallet={wallet} />}
         {tab === 'investor' && <InvestorView pool={pool} wallet={wallet} />}
@@ -65,12 +67,14 @@ function AppContent() {
         {tab === 'settings' && <SettingsView />}
       </main>
 
-      <nav className="bottom-nav">
+      <nav className="bottom-nav" aria-label="Main navigation">
         {tabs.map((t) => (
           <button
             key={t.id}
             className={`nav-btn ${tab === t.id ? 'active' : ''}`}
             onClick={() => setTab(t.id)}
+            aria-label={t.label}
+            aria-pressed={tab === t.id}
           >
             <span className="nav-icon">{t.icon}</span>
             <span className="nav-label">{t.label}</span>
