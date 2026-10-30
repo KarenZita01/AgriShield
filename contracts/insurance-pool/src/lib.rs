@@ -490,6 +490,149 @@ impl InsurancePool {
         )
     }
 
+    pub fn set_emergency_admin(env: Env, new_admin: Address) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        let mut updated = existing;
+        updated.admin = new_admin.clone();
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("emergency_admin_set"),), (new_admin,));
+    }
+
+    pub fn get_emergency_admin(env: Env) -> Address {
+        get_config(&env).admin
+    }
+
+    pub fn add_liquidity_provider(env: Env, provider: Address) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage()
+            .persistent()
+            .set(&DataKey::Provider(provider), &true);
+        env.events()
+            .publish((symbol_short!("provider_added"),), (provider,));
+    }
+
+    pub fn remove_liquidity_provider(env: Env, provider: Address) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage().persistent().remove(&DataKey::Provider(provider));
+        env.events()
+            .publish((symbol_short!("provider_removed"),), (provider,));
+    }
+
+    pub fn is_provider_authorized(env: Env, provider: Address) -> bool {
+        env.storage()
+            .persistent()
+            .get::<DataKey, bool>(&DataKey::Provider(provider))
+            .unwrap_or(false)
+    }
+
+    pub fn set_deposit_fee(env: Env, fee_bps: u32) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if fee_bps > 10_000 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::DepositFeeBps, &fee_bps);
+        env.events()
+            .publish((symbol_short!("deposit_fee_set"),), (fee_bps,));
+    }
+
+    pub fn get_deposit_fee(env: Env) -> u32 {
+        env.storage()
+            .persistent()
+            .get(&DataKey::DepositFeeBps)
+            .unwrap_or(0)
+    }
+
+    pub fn set_liquidity_lock_period(env: Env, period: u64) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        env.storage()
+            .persistent()
+            .set(&DataKey::LiquidityLockPeriod, &period);
+        env.events()
+            .publish((symbol_short!("liquidity_lock_set"),), (period,));
+    }
+
+    pub fn set_oracle_cooldown(env: Env, cooldown: u64) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        env.storage()
+            .persistent()
+            .set(&DataKey::OracleCooldownSec, &cooldown);
+        env.events()
+            .publish((symbol_short!("oracle_cooldown_set"),), (cooldown,));
+    }
+
+    pub fn get_oracle_cooldown(env: Env) -> u64 {
+        env.storage()
+            .persistent()
+            .get(&DataKey::OracleCooldownSec)
+            .unwrap_or(0)
+    }
+
+    pub fn get_claimable_amount(env: Env, farmer: Address) -> i128 {
+        let record = env
+            .storage()
+            .persistent()
+            .get::<DataKey, CoverageRecord>(&DataKey::Farmer(farmer.clone()))
+            .unwrap_or(CoverageRecord {
+                enrolled_at: 0,
+                premium_paid: 0,
+                claimed: false,
+                payout_amount: 0,
+            });
+        if record.claimed {
+            return 0;
+        }
+        let config = get_config(&env);
+        let state = get_state(&env);
+        if state != PoolState::Triggered {
+            return 0;
+        }
+        config.coverage
+    }
+
+    pub fn is_farmer_enrolled(env: Env, farmer: Address) -> bool {
+        env.storage()
+            .persistent()
+            .has(&DataKey::Farmer(farmer))
+    }
+
+    pub fn set_paused_reason(env: Env, reason: Symbol) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage()
+            .persistent()
+            .set(&DataKey::PausedReason, &reason);
+        env.events()
+            .publish((symbol_short!("pause_reason_set"),), (reason,));
+    }
+
+    pub fn get_paused_reason(env: Env) -> Option<Symbol> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::PausedReason)
+    }
+
+    pub fn transfer_ownership(env: Env, new_admin: Address) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if new_admin == existing.admin {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        let mut updated = existing;
+        updated.admin = new_admin.clone();
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("ownership_transferred"),), (existing.admin, new_admin));
+    }
+
     pub fn enroll(env: Env, farmer: Address) {
         if is_guarded(&env) {
             panic_with_error!(env, PoolError::ReentrancyDetected);
