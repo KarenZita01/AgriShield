@@ -20,6 +20,7 @@ pub struct PoolConfig {
     pub window_end: u64,
     pub min_liquidity: i128,
     pub payout_window: u64,
+    pub claim_window: u64,
     pub tolerance: i128,
 }
 

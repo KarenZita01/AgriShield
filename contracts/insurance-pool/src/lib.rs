@@ -371,7 +371,46 @@ impl InsurancePool {
             .publish((symbol_short!("payout_window_updated"),), (payout_window,));
     }
 
-    pub fn set_region(env: Env, region: Symbol) {
+    pub fn set_claim_window(env: Env, claim_window: u64) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        let mut updated = existing;
+        updated.claim_window = claim_window;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("claim_window_set"),), (claim_window,));
+    }
+
+    pub fn get_claim_window(env: Env) -> u64 {
+        get_config(&env).claim_window
+    }
+
+    pub fn get_unclaimed_farmers(env: Env) -> u32 {
+        farmer_count(&env).saturating_sub(claimed_count(&env))
+    }
+
+    pub fn get_total_claims(env: Env) -> i128 {
+        total_claimed(&env)
+    }
+
+    pub fn get_total_deposits(env: Env) -> i128 {
+        total_liquidity(&env)
+    }
+
+    pub fn get_provider_deposit(env: Env, provider: Address) -> i128 {
+        provider_balance(env, provider)
+    }
+
+    pub fn is_reading_stale(env: Env, timestamp: u64) -> bool {
+        let now = env.ledger().timestamp();
+        now.saturating_sub(timestamp) > 7 * 86_400
+    }
+
+    pub fn validate_reading_value(env: Env, value: i128) -> bool {
+        value >= 0 && value <= 1_000_000_000_000i128
+    }
+
+    pub fn enroll(env: Env, farmer: Address) {
         let existing = get_config(&env);
         existing.admin.require_auth();
         let mut updated = existing;
