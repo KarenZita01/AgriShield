@@ -1,9 +1,16 @@
 export function deriveReadingId(timestamp) {
+  if (Number.isNaN(timestamp) || timestamp <= 0) {
+    throw new Error(`Invalid timestamp for reading id: ${timestamp}`)
+  }
   return BigInt(timestamp)
 }
 
 export function toScaled(value) {
-  return BigInt(Math.round(value * 10_000_000))
+  const num = Number(value)
+  if (!Number.isFinite(num)) {
+    throw new Error(`toScaled: value is not finite: ${value}`)
+  }
+  return BigInt(Math.round(num * 10_000_000))
 }
 
 export function checkAgreement(oracleA, oracleB, tolerance) {

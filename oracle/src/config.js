@@ -1,4 +1,4 @@
-export const config = {
+export const config = Object.freeze({
   rpcUrl: process.env.RPC_URL || 'https://soroban-testnet.stellar.org',
   networkPassphrase: process.env.NETWORK_PASSPHRASE || 'Test SDF Future Network ; October 2022',
   poolContractId: process.env.POOL_CONTRACT_ID || '',
@@ -9,13 +9,25 @@ export const config = {
   pollIntervalMs: parseInt(process.env.POLL_INTERVAL_MS || '3600000'), // 1 hour
   threshold: parseInt(process.env.THRESHOLD || '50'),
   tolerance: parseInt(process.env.TOLERANCE || '10'),
-}
+})
 
 export function validateConfig() {
   const required = ['poolContractId', 'oracleSecretKey']
   const missing = required.filter(k => !config[k])
   if (missing.length > 0) {
     throw new Error(`Missing required config: ${missing.join(', ')}`)
+  }
+  if (!/^https:/i.test(config.rpcUrl)) {
+    throw new Error(`Invalid RPC URL: ${config.rpcUrl} (must use https)`)
+  }
+  if (Number.isNaN(config.latitude) || config.latitude < -90 || config.latitude > 90) {
+    throw new Error(`Invalid latitude: ${config.latitude} (must be -90 to 90)`)
+  }
+  if (Number.isNaN(config.longitude) || config.longitude < -180 || config.longitude > 180) {
+    throw new Error(`Invalid longitude: ${config.longitude} (must be -180 to 180)`)
+  }
+  if (config.oracleSecretKey.length < 32) {
+    throw new Error('Invalid oracleSecretKey: expected a Stellar secret seed (>=32 chars)')
   }
   if (config.threshold < 0) {
     throw new Error(`Invalid threshold: ${config.threshold} (must be >= 0)`)
