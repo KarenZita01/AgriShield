@@ -57,7 +57,7 @@ export default function DashboardView({ pool, wallet }: DashboardProps) {
       <div className="card">
         <div className="card-header">
           <span className="card-title">Pool Status</span>
-          <span className={`status-badge ${STATE_CLASSES[pool.state] || 'status-active'}`}>
+          <span className={`status-badge ${STATE_CLASSES[pool.state] || 'status-active'}`} aria-label={STATE_LABELS[pool.state] || 'Unknown'}>
             {STATE_LABELS[pool.state] || 'Unknown'}
           </span>
         </div>

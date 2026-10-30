@@ -65,19 +65,19 @@ export default function FeedbackView() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate role="form">
         <div className="card">
-          <div className="input-group">
-            <label>Name *</label>
-            <input className="input" required value={name} onChange={e => setName(e.target.value)} />
-          </div>
+        <div className="input-group">
+          <label>Name *</label>
+          <input className="input" required value={name} onChange={e => setName(e.target.value)} autoComplete="off" />
+        </div>
           <div className="input-group">
             <label>Email *</label>
-            <input className="input" type="email" required value={email} onChange={e => setEmail(e.target.value)} />
+            <input className="input" type="email" required value={email} onChange={e => setEmail(e.target.value)} autoComplete="off" />
           </div>
           <div className="input-group">
-            <label>Wallet Address</label>
-            <input className="input" value={walletAddress} onChange={e => setWalletAddress(e.target.value)} placeholder="G..." />
+          <label>Wallet Address</label>
+          <input className="input" value={walletAddress} onChange={e => setWalletAddress(e.target.value)} placeholder="G..." autoComplete="off" />
           </div>
         </div>
 

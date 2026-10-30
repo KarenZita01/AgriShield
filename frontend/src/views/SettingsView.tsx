@@ -58,6 +58,7 @@ export default function SettingsView() {
             value={rpcUrl}
             onChange={e => setRpcUrl(e.target.value)}
             placeholder="https://soroban-testnet.stellar.org"
+            autoComplete="off"
           />
         </div>
         <div className="input-group">
@@ -67,11 +68,18 @@ export default function SettingsView() {
             value={poolId}
             onChange={e => setPoolId(e.target.value)}
             placeholder="CBIWI..."
+            autoComplete="off"
           />
         </div>
         <div className="input-group">
           <label>Token Contract ID</label>
           <input
+            className="input"
+            value={tokenId}
+            onChange={e => setTokenId(e.target.value)}
+            placeholder="CCXCW..."
+            autoComplete="off"
+          />
             className="input"
             value={tokenId}
             onChange={e => setTokenId(e.target.value)}

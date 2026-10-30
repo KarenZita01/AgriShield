@@ -853,6 +853,18 @@ impl InsurancePool {
         crate::storage::contract_version(&env)
     }
 
+    pub fn window_start_read(env: Env) -> u64 {
+        get_config(&env).window_start
+    }
+
+    pub fn window_end_read(env: Env) -> u64 {
+        get_config(&env).window_end
+    }
+
+    pub fn max_farmers_read(env: Env) -> u32 {
+        crate::storage::max_farmers(&env)
+    }
+
     pub fn config_read(env: Env) -> (Address, Address, Address, Address, Symbol, i64, i64, u32, i128, i128, i128, u64, u64, i128, u64, i128) {
         let c = get_config(&env);
         (c.admin, c.oracle_a, c.oracle_b, c.token, c.region, c.latitude, c.longitude, c.metric, c.threshold, c.premium, c.coverage, c.window_start, c.window_end, c.min_liquidity, c.payout_window, c.tolerance)
