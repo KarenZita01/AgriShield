@@ -9,6 +9,8 @@ export const config = Object.freeze({
   pollIntervalMs: parseInt(process.env.POLL_INTERVAL_MS || '3600000'), // 1 hour
   threshold: parseInt(process.env.THRESHOLD || '50'),
   tolerance: parseInt(process.env.TOLERANCE || '10'),
+  dryRun: process.env.DRY_RUN === 'true',
+  maxSubmitRetries: parseInt(process.env.MAX_SUBMIT_RETRIES || '3'),
 })
 
 export function validateConfig() {
@@ -41,7 +43,10 @@ export function validateConfig() {
   if (config.pollIntervalMs < 1000) {
     throw new Error(`Invalid poll interval: ${config.pollIntervalMs}ms (must be >= 1000ms)`)
   }
-  if (config.pollIntervalMs > 24 * 60 * 60 * 1000) {
-    throw new Error(`Invalid poll interval: ${config.pollIntervalMs}ms (must be <= 24h)`)
+  if (!config.networkPassphrase || config.networkPassphrase.trim().length === 0) {
+    throw new Error('Invalid networkPassphrase: must not be empty')
+  }
+  if (config.maxSubmitRetries < 1 || config.maxSubmitRetries > 10) {
+    throw new Error(`Invalid maxSubmitRetries: ${config.maxSubmitRetries} (must be 1-10)`)
   }
 }

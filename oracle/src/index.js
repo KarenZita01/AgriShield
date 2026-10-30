@@ -3,7 +3,7 @@ import { fetchWeather } from './weather.js'
 import { deriveReadingId, toScaled, checkAgreement, isBreach } from './lib.js'
 import { Keypair, SorobanRpc, Contract, Address, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 
-const SUBMIT_RETRY = 3
+const SUBMIT_RETRY = config.maxSubmitRetries
 let consecutiveFailures = 0
 const CIRCUIT_BREAKER_THRESHOLD = 5
 let lastSubmittedReadingId = null
@@ -62,7 +62,15 @@ async function submitReading(readingId, timestamp, value) {
   let lastErr
   for (let attempt = 1; attempt <= SUBMIT_RETRY; attempt++) {
     try {
-      await simulateSubmit(sourceKeypair, readingId, timestamp, value)
+      const sim = await simulateSubmit(sourceKeypair, readingId, timestamp, value)
+      if (config.dryRun) {
+        log('INFO', 'Dry run: simulation succeeded, not sending', { readingId })
+        metrics.submissions++
+        metrics.successes++
+        lastSubmittedReadingId = readingId
+        lastSuccessfulSubmission = Date.now()
+        return { status: 'DRY_RUN_OK', simulation: sim }
+      }
       const server = new SorobanRpc.Server(config.rpcUrl, { allowHttp: true })
       const sourceAccount = await server.getAccount(sourceKeypair.publicKey())
       const txBuilder = new TransactionBuilder(sourceAccount, {

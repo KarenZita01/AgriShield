@@ -19,12 +19,28 @@ export function formatMm(value) {
   return (num / 10_000_000).toFixed(2) + ' mm'
 }
 
+export function computeDiff(a, b) {
+  const x = Number(a)
+  const y = Number(b)
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    throw new Error(`computeDiff: inputs must be finite`)
+  }
+  return Math.abs(x - y)
+}
+
+export function isWithinTolerance(diff, tolerance) {
+  if (!Number.isFinite(diff) || !Number.isFinite(tolerance)) {
+    throw new Error(`isWithinTolerance: inputs must be finite`)
+  }
+  return diff <= tolerance
+}
+
 export function checkAgreement(oracleA, oracleB, tolerance) {
   if (tolerance < 0) {
     throw new Error(`checkAgreement: tolerance must be >= 0, got ${tolerance}`)
   }
-  const diff = oracleA > oracleB ? oracleA - oracleB : oracleB - oracleA
-  return diff <= toScaled(tolerance)
+  const diff = computeDiff(oracleA, oracleB)
+  return isWithinTolerance(diff, toScaled(tolerance))
 }
 
 export function isBreach(value, threshold) {
