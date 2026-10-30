@@ -322,6 +322,174 @@ impl InsurancePool {
             .publish((symbol_short!("max_farmers_updated"),), (max,));
     }
 
+    pub fn set_premium(env: Env, premium: i128) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if premium <= 0 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        let mut updated = existing;
+        updated.premium = premium;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("premium_updated"),), (premium,));
+    }
+
+    pub fn set_coverage(env: Env, coverage: i128) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if coverage <= 0 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        let mut updated = existing;
+        updated.coverage = coverage;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("coverage_updated"),), (coverage,));
+    }
+
+    pub fn set_min_liquidity(env: Env, min_liquidity: i128) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if min_liquidity <= 0 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        let mut updated = existing;
+        updated.min_liquidity = min_liquidity;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("min_liquidity_updated"),), (min_liquidity,));
+    }
+
+    pub fn set_payout_window(env: Env, payout_window: u64) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        let mut updated = existing;
+        updated.payout_window = payout_window;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("payout_window_updated"),), (payout_window,));
+    }
+
+    pub fn set_region(env: Env, region: Symbol) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        let mut updated = existing;
+        updated.region = region;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("region_updated"),), (region,));
+    }
+
+    pub fn set_metric(env: Env, metric: Symbol) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if metric != METRIC_RAINFALL {
+            panic_with_error!(env, PoolError::UnsupportedMetric);
+        }
+        let mut updated = existing;
+        updated.metric = metric;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("metric_updated"),), (metric,));
+    }
+
+    pub fn set_location(env: Env, latitude: i64, longitude: i64) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if latitude < -90_000_000 || latitude > 90_000_000 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        if longitude < -180_000_000 || longitude > 180_000_000 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        let mut updated = existing;
+        updated.latitude = latitude;
+        updated.longitude = longitude;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("location_updated"),), (latitude, longitude));
+    }
+
+    pub fn activate_pool(env: Env) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        let state = get_state(&env);
+        if state == PoolState::Active {
+            panic_with_error!(env, PoolError::PoolStillActive);
+        }
+        if state == PoolState::Closed {
+            panic_with_error!(env, PoolError::AlreadyClosed);
+        }
+        set_state(&env, PoolState::Active);
+        env.storage().persistent().set(&DataKey::Paused, &false);
+        env.events()
+            .publish((symbol_short!("activated"),), ());
+    }
+
+    pub fn revoke_oracle(env: Env, oracle: Address) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        if oracle == config.oracle_a && oracle == config.oracle_b {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        let sentinel = env.current_contract_address();
+        let mut updated = config;
+        if updated.oracle_a == oracle {
+            updated.oracle_a = sentinel.clone();
+        }
+        if updated.oracle_b == oracle {
+            updated.oracle_b = sentinel;
+        }
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("oracle_revoked"),), (oracle,));
+    }
+
+    pub fn emergency_withdraw_all(env: Env) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        if get_state(&env) != PoolState::Closed {
+            panic_with_error!(env, PoolError::PoolNotClosed);
+        }
+        let token = TokenClient::new(&env, &config.token);
+        let balance = token.balance(&env.current_contract_address());
+        if balance <= 0 {
+            panic_with_error!(env, PoolError::EmptyPool);
+        }
+        token.transfer(&env.current_contract_address(), &config.admin, &balance);
+        env.events()
+            .publish((symbol_short!("emergency_withdraw_all"),), (config.admin, balance));
+    }
+
+    pub fn get_last_reading_id(env: Env) -> u64 {
+        crate::storage::last_reading_id(&env)
+    }
+
+    pub fn get_providers(env: Env) -> Vec<Address> {
+        // Return providers with nonzero balances
+        let mut result = Vec::new();
+        // providers stored individually; scan not supported directly, return empty placeholder
+        result
+    }
+
+    pub fn get_farmers(env: Env) -> Vec<Address> {
+        let mut result = Vec::new();
+        result
+    }
+
+    pub fn get_readings_count(env: Env) -> u64 {
+        crate::storage::last_reading_id(&env)
+    }
+
+    pub fn health_check(env: Env) -> (u32, bool, i128) {
+        (
+            get_state(&env).to_u32(),
+            is_paused(&env),
+            net_liability(&env),
+        )
+    }
+
     pub fn enroll(env: Env, farmer: Address) {
         if is_guarded(&env) {
             panic_with_error!(env, PoolError::ReentrancyDetected);
@@ -698,9 +866,19 @@ impl InsurancePool {
         get_state(&env) == PoolState::Active
     }
 
-    pub fn paused(env: Env) -> bool {
+    pub fn is_pool_triggered(env: Env) -> bool {
+        get_state(&env) == PoolState::Triggered
+    }
+
+    pub fn is_pool_closed(env: Env) -> bool {
+        get_state(&env) == PoolState::Closed
+    }
+
+    pub fn is_pool_paused(env: Env) -> bool {
         is_paused(&env)
     }
+
+    pub fn paused(env: Env) -> bool {
 
     pub fn farmer_status(env: Env, farmer: Address) -> Option<CoverageRecord> {
         env.storage().persistent().get(&DataKey::Farmer(farmer))
