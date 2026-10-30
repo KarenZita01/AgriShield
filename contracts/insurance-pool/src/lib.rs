@@ -410,6 +410,113 @@ impl InsurancePool {
         value >= 0 && value <= 1_000_000_000_000i128
     }
 
+    pub fn enforce_oracle_cooldown(env: Env, oracle: Address) -> bool {
+        let last = last_oracle_submit(&env, &oracle);
+        let cooldown = get_oracle_cooldown(&env);
+        let now = env.ledger().timestamp();
+        if cooldown > 0 && last > 0 && now.saturating_sub(last) < cooldown {
+            return false;
+        }
+        true
+    }
+
+    pub fn get_oracle_threshold(env: Env) -> i128 {
+        get_config(&env).threshold
+    }
+
+    pub fn set_oracle_threshold(env: Env, threshold: i128) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if threshold <= 0 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        let mut updated = existing;
+        updated.threshold = threshold;
+        env.storage().instance().set(&DataKey::Config, &updated);
+        env.events()
+            .publish((symbol_short!("oracle_threshold_set"),), (threshold,));
+    }
+
+    pub fn is_enrollment_open(env: Env) -> bool {
+        get_state(&env) == PoolState::Active && !is_paused(&env)
+    }
+
+    pub fn get_blacklist_count(env: Env) -> u32 {
+        // Approximate: not directly enumerable; return 0 placeholder
+        0
+    }
+
+    pub fn is_pool_solvent(env: Env) -> bool {
+        let outstanding = liability(&env);
+        if outstanding <= 0 {
+            return true;
+        }
+        let config = get_config(&env);
+        let token = TokenClient::new(&env, &config.token);
+        let held = token.balance(&env.current_contract_address());
+        held >= outstanding
+    }
+
+    pub fn get_next_reading_id(env: Env) -> u64 {
+        crate::storage::last_reading_id(&env) + 1
+    }
+
+    pub fn get_farmer_record(env: Env, farmer: Address) -> Option<CoverageRecord> {
+        farmer_status(env, farmer)
+    }
+
+    pub fn get_provider_record(env: Env, provider: Address) -> i128 {
+        provider_balance(env, provider)
+    }
+
+    pub fn get_config_summary(env: Env) -> (Address, Address, Address, i128, i128, i128, u64, u64) {
+        let c = get_config(&env);
+        (
+            c.admin,
+            c.oracle_a,
+            c.oracle_b,
+            c.premium,
+            c.coverage,
+            c.threshold,
+            c.window_start,
+            c.window_end,
+        )
+    }
+
+    pub fn set_enrollment_fee(env: Env, fee: i128) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        if fee < 0 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::DepositFeeBps, &(fee as u32));
+        env.events()
+            .publish((symbol_short!("enrollment_fee_set"),), (fee,));
+    }
+
+    pub fn distribute_premiums(env: Env) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        let token = TokenClient::new(&env, &config.token);
+        let balance = token.balance(&env.current_contract_address());
+        if balance == 0 {
+            panic_with_error!(env, PoolError::EmptyPool);
+        }
+        // Distribute half to admin as protocol fee
+        let share = balance / 2;
+        if share > 0 {
+            token.transfer(&env.current_contract_address(), &config.admin, &share);
+            env.events()
+                .publish((symbol_short!("premiums_distributed"),), (config.admin, share));
+        }
+    }
+
+    pub fn get_distributed_premiums(env: Env) -> i128 {
+        0
+    }
+
     pub fn enroll(env: Env, farmer: Address) {
         let existing = get_config(&env);
         existing.admin.require_auth();
