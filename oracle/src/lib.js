@@ -13,6 +13,12 @@ export function toScaled(value) {
   return BigInt(Math.round(num * 10_000_000))
 }
 
+export function formatMm(value) {
+  const num = Number(value)
+  if (!Number.isFinite(num)) return '? mm'
+  return (num / 10_000_000).toFixed(2) + ' mm'
+}
+
 export function checkAgreement(oracleA, oracleB, tolerance) {
   if (tolerance < 0) {
     throw new Error(`checkAgreement: tolerance must be >= 0, got ${tolerance}`)

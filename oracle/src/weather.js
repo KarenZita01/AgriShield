@@ -19,7 +19,10 @@ export async function fetchWeather(latitude, longitude, retries = 3) {
         signal: controller.signal,
         headers: { 'User-Agent': 'agrishield-oracle/1.0' },
       })
-      clearTimeout(timeout)
+      const contentType = res.headers.get('content-type') || ''
+      if (!contentType.includes('application/json')) {
+        throw new Error(`Unexpected content type: ${contentType}`)
+      }
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`)
       }
@@ -32,6 +35,11 @@ export async function fetchWeather(latitude, longitude, retries = 3) {
       const weatherTime = data.current.time
       if (!weatherTime) {
         throw new Error('Missing weather observation time')
+      }
+      const obsTs = Math.floor(new Date(weatherTime).getTime() / 1000)
+      const nowTs = Math.floor(Date.now() / 1000)
+      if (obsTs > nowTs + 300) {
+        throw new Error(`Observation time in the future: ${weatherTime}`)
       }
 
       let rainfall = Number(data.current.rain)

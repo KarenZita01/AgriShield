@@ -41,4 +41,7 @@ export function validateConfig() {
   if (config.pollIntervalMs < 1000) {
     throw new Error(`Invalid poll interval: ${config.pollIntervalMs}ms (must be >= 1000ms)`)
   }
+  if (config.pollIntervalMs > 24 * 60 * 60 * 1000) {
+    throw new Error(`Invalid poll interval: ${config.pollIntervalMs}ms (must be <= 24h)`)
+  }
 }
