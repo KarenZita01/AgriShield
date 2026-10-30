@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useToasts } from '../hooks/useToasts'
 
 const STORAGE_KEY = 'agrishield_settings'
 
 export default function SettingsView() {
+  const { addToast } = useToasts()
   const [rpcUrl, setRpcUrl] = useState(import.meta.env.VITE_RPC_URL || '')
   const [poolId, setPoolId] = useState(import.meta.env.VITE_POOL_CONTRACT_ID || '')
   const [tokenId, setTokenId] = useState(import.meta.env.VITE_TOKEN_CONTRACT_ID || '')
@@ -21,9 +23,18 @@ export default function SettingsView() {
   }, [])
 
   const handleSave = () => {
+    if (!poolId.startsWith('C') || poolId.length < 56) {
+      addToast('Invalid Pool Contract ID (stellar contract IDs start with C)', 'error')
+      return
+    }
+    if (!tokenId.startsWith('C') || tokenId.length < 56) {
+      addToast('Invalid Token Contract ID (stellar contract IDs start with C)', 'error')
+      return
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ rpcUrl, poolId, tokenId }))
     } catch {}
+    addToast('Settings saved to localStorage', 'success')
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }

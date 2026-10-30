@@ -25,7 +25,7 @@ const STATE_CLASSES: Record<number, string> = {
 export default function DashboardView({ pool, wallet }: DashboardProps) {
   const { addToast } = useToasts()
   const formatAmount = (val: string) => {
-    const num = parseInt(val) || 0
+    const num = parseFloat(val) || 0
     return (num / 10_000_000).toFixed(2)
   }
 

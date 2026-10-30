@@ -56,11 +56,15 @@ export default function FarmerView({ pool, wallet }: FarmerProps) {
           </div>
           <div>
             <div className="stat-label">Premium</div>
-            <div className="stat-value text-sm">1.00 mUSD</div>
+            <div className="stat-value text-sm">
+              {pool.premium !== undefined ? ((pool.premium as number) / 10_000_000).toFixed(2) : '1.00'} mUSD
+            </div>
           </div>
           <div>
             <div className="stat-label">Coverage</div>
-            <div className="stat-value text-sm">50.00 mUSD</div>
+            <div className="stat-value text-sm">
+              {pool.coverage !== undefined ? ((pool.coverage as number) / 10_000_000).toFixed(2) : '50.00'} mUSD
+            </div>
           </div>
           <div>
             <div className="stat-label">Claim</div>

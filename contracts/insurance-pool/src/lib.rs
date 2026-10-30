@@ -58,6 +58,9 @@ pub enum PoolError {
     LiquidityLocked = 35,
     Blacklisted = 36,
     AdminOnly = 37,
+    UnclaimedFarmers = 38,
+    InsufficientPremium = 39,
+    InvalidMetric = 40,
 }
 
 #[contract]
@@ -166,6 +169,9 @@ impl InsurancePool {
         if state == PoolState::Closed {
             panic_with_error!(env, PoolError::AlreadyClosed);
         }
+        if state == PoolState::Triggered && claimed_count(&env) < farmer_count(&env) {
+            panic_with_error!(env, PoolError::UnclaimedFarmers);
+        }
         set_state(&env, PoolState::Closed);
         env.events().publish((symbol_short!("closed"),), ());
     }
@@ -232,6 +238,22 @@ impl InsurancePool {
         env.storage().instance().set(&DataKey::Config, &config);
         env.events()
             .publish((symbol_short!("config_updated"),), (config.threshold, config.premium));
+    }
+
+    pub fn emergency_pause(env: Env) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage().persistent().set(&DataKey::Paused, &true);
+        env.events()
+            .publish((symbol_short!("emergency_pause"),), (config.admin,));
+    }
+
+    pub fn emergency_unpause(env: Env) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage().persistent().set(&DataKey::Paused, &false);
+        env.events()
+            .publish((symbol_short!("emergency_unpause"),), (config.admin,));
     }
 
     pub fn set_threshold(env: Env, threshold: i128) {
@@ -672,16 +694,12 @@ impl InsurancePool {
         get_state(&env).to_u32()
     }
 
+    pub fn is_active(env: Env) -> bool {
+        get_state(&env) == PoolState::Active
+    }
+
     pub fn paused(env: Env) -> bool {
         is_paused(&env)
-    }
-
-    pub fn farmer_count(env: Env) -> u32 {
-        farmer_count(&env)
-    }
-
-    pub fn claimed_count(env: Env) -> u32 {
-        claimed_count(&env)
     }
 
     pub fn farmer_status(env: Env, farmer: Address) -> Option<CoverageRecord> {
@@ -695,20 +713,28 @@ impl InsurancePool {
             .unwrap_or(0)
     }
 
-    pub fn total_liquidity(env: Env) -> i128 {
-        total_liquidity(&env)
+    pub fn oracle_a(env: Env) -> Address {
+        get_config(&env).oracle_a
     }
 
-    pub fn total_premiums(env: Env) -> i128 {
-        total_premiums(&env)
+    pub fn oracle_b(env: Env) -> Address {
+        get_config(&env).oracle_b
     }
 
-    pub fn total_payouts(env: Env) -> i128 {
-        total_payouts(&env)
+    pub fn threshold(env: Env) -> i128 {
+        get_config(&env).threshold
     }
 
-    pub fn last_reading_id(env: Env) -> u64 {
-        last_reading_id(&env)
+    pub fn tolerance(env: Env) -> i128 {
+        get_config(&env).tolerance
+    }
+
+    pub fn min_liquidity(env: Env) -> i128 {
+        get_config(&env).min_liquidity
+    }
+
+    pub fn payout_window(env: Env) -> u64 {
+        get_config(&env).payout_window
     }
 
     pub fn get_reading(env: Env, reading_id: u64) -> Option<Reading> {
@@ -753,6 +779,27 @@ impl InsurancePool {
 
     pub fn net_liability(env: Env) -> i128 {
         crate::storage::net_liability(&env)
+    }
+
+    pub fn premium(env: Env) -> i128 {
+        get_config(&env).premium
+    }
+
+    pub fn coverage(env: Env) -> i128 {
+        get_config(&env).coverage
+    }
+
+    pub fn enrollment_fee(env: Env) -> i128 {
+        get_config(&env).premium
+    }
+
+    pub fn total_farmers(env: Env) -> u32 {
+        crate::storage::farmer_count(&env)
+    }
+
+    pub fn config_read(env: Env) -> (Address, Address, Address, Address, Symbol, i64, i64, u32, i128, i128, i128, u64, u64, i128, u64, i128) {
+        let c = get_config(&env);
+        (c.admin, c.oracle_a, c.oracle_b, c.token, c.region, c.latitude, c.longitude, c.metric, c.threshold, c.premium, c.coverage, c.window_start, c.window_end, c.min_liquidity, c.payout_window, c.tolerance)
     }
 
     pub fn triggered_at(env: Env) -> u64 {
