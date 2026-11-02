@@ -2,7 +2,7 @@
 
 use soroban_sdk::{
     contract, contracterror, contractimpl, symbol_short, token::Client as TokenClient,
-    Address, Env, Symbol,
+    Address, Env, Symbol, Vec,
 };
 
 mod storage;
@@ -68,6 +68,83 @@ pub struct InsurancePool;
 
 #[contractimpl]
 impl InsurancePool {
+    pub fn get_oracle_cooldown(env: &Env) -> u64 {
+        env.storage()
+            .persistent()
+            .get(&DataKey::OracleCooldownSec)
+            .unwrap_or(0)
+    }
+
+    pub fn farmer_status(env: Env, farmer: Address) -> Option<CoverageRecord> {
+        env.storage().persistent().get(&DataKey::Farmer(farmer))
+    }
+
+    pub fn provider_balance(env: Env, provider: Address) -> i128 {
+        env.storage()
+            .persistent()
+            .get::<DataKey, i128>(&DataKey::Provider(provider))
+            .unwrap_or(0)
+    }
+
+    fn enroll_inner(env: &Env, farmer: Address) {
+        farmer.require_auth();
+        let config = get_config(&env);
+        if is_paused(&env) {
+            panic_with_error!(env, PoolError::Paused);
+        }
+        if get_state(&env) != PoolState::Active {
+            panic_with_error!(env, PoolError::PoolNotActive);
+        }
+        if is_blacklisted(&env, &farmer) {
+            panic_with_error!(env, PoolError::Blacklisted);
+        }
+        if farmer_count(&env) >= max_farmers(&env) {
+            panic_with_error!(env, PoolError::PoolAtCapacity);
+        }
+        if env
+            .storage()
+            .persistent()
+            .has(&DataKey::Farmer(farmer.clone()))
+        {
+            panic_with_error!(env, PoolError::AlreadyEnrolled);
+        }
+
+        let next_liability = (farmer_count(&env) as i128 + 1) * config.coverage;
+        let token = TokenClient::new(&env, &config.token);
+        if token.balance(&env.current_contract_address()) < next_liability {
+            panic_with_error!(env, PoolError::PoolInsolvent);
+        }
+
+        token.transfer(&farmer, &env.current_contract_address(), &config.premium);
+
+        let record = CoverageRecord {
+            enrolled_at: env.ledger().timestamp(),
+            premium_paid: config.premium,
+            claimed: false,
+            payout_amount: 0,
+        };
+        env.storage()
+            .persistent()
+            .set(&DataKey::Farmer(farmer.clone()), &record);
+        env.storage()
+            .persistent()
+            .set(&DataKey::FarmerEnrolledAt(farmer.clone()), &env.ledger().timestamp());
+        env.storage()
+            .persistent()
+            .set(&DataKey::FarmerCount, &(farmer_count(&env) + 1));
+        env.storage().persistent().set(
+            &DataKey::TotalPremiums,
+            &(total_premiums(&env) + config.premium),
+        );
+
+        env.events()
+            .publish((symbol_short!("enrolled"),), (farmer, config.premium));
+    }
+
+    pub fn get_pool_age(env: Env) -> u64 {
+        env.ledger().timestamp()
+    }
+
     pub fn initialize(env: Env, admin: Address, config: PoolConfig) {
         if env.storage().instance().has(&DataKey::Config) {
             panic_with_error!(env, PoolError::AlreadyInitialized);
@@ -203,7 +280,9 @@ impl InsurancePool {
     pub fn blacklist_address(env: Env, addr: Address) {
         let config = get_config(&env);
         config.admin.require_auth();
-        env.storage().persistent().set(&DataKey::Blacklist(addr), &true);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Blacklist(addr.clone()), &true);
         env.events()
             .publish((symbol_short!("blacklist"),), (addr,));
     }
@@ -211,9 +290,11 @@ impl InsurancePool {
     pub fn unblacklist_address(env: Env, addr: Address) {
         let config = get_config(&env);
         config.admin.require_auth();
-        env.storage().persistent().remove(&DataKey::Blacklist(addr));
+        env.storage()
+            .persistent()
+            .remove(&DataKey::Blacklist(addr.clone()));
         env.events()
-            .publish((symbol_short!("unblacklist"),), (addr,));
+            .publish((symbol_short!("unblist"),), (addr,));
     }
 
     pub fn update_config(env: Env, config: PoolConfig) {
@@ -237,7 +318,7 @@ impl InsurancePool {
         }
         env.storage().instance().set(&DataKey::Config, &config);
         env.events()
-            .publish((symbol_short!("config_updated"),), (config.threshold, config.premium));
+            .publish((symbol_short!("cfg_upd"),), (config.threshold, config.premium));
     }
 
     pub fn emergency_pause(env: Env) {
@@ -245,7 +326,7 @@ impl InsurancePool {
         config.admin.require_auth();
         env.storage().persistent().set(&DataKey::Paused, &true);
         env.events()
-            .publish((symbol_short!("emergency_pause"),), (config.admin,));
+            .publish((symbol_short!("epause"),), (config.admin,));
     }
 
     pub fn emergency_unpause(env: Env) {
@@ -253,7 +334,7 @@ impl InsurancePool {
         config.admin.require_auth();
         env.storage().persistent().set(&DataKey::Paused, &false);
         env.events()
-            .publish((symbol_short!("emergency_unpause"),), (config.admin,));
+            .publish((symbol_short!("eunpause"),), (config.admin,));
     }
 
     pub fn set_threshold(env: Env, threshold: i128) {
@@ -266,7 +347,7 @@ impl InsurancePool {
         updated.threshold = threshold;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("threshold_updated"),), (threshold,));
+            .publish((symbol_short!("thr_upd"),), (threshold,));
     }
 
     pub fn set_tolerance(env: Env, tolerance: i128) {
@@ -279,20 +360,21 @@ impl InsurancePool {
         updated.tolerance = tolerance;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("tolerance_updated"),), (tolerance,));
+            .publish((symbol_short!("tol_upd"),), (tolerance,));
     }
 
     pub fn set_admin(env: Env, new_admin: Address) {
         let existing = get_config(&env);
-        existing.admin.require_auth();
-        if new_admin == existing.admin {
+        let admin = existing.admin.clone();
+        admin.require_auth();
+        if new_admin == admin {
             panic_with_error!(env, PoolError::InvalidParameter);
         }
         let mut updated = existing;
         updated.admin = new_admin.clone();
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("admin_changed"),), (existing.admin, new_admin));
+            .publish((symbol_short!("admin_chg"),), (admin, new_admin));
     }
 
     pub fn set_window(env: Env, window_start: u64, window_end: u64) {
@@ -306,7 +388,7 @@ impl InsurancePool {
         updated.window_end = window_end;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("window_updated"),), (window_start, window_end));
+            .publish((symbol_short!("win_upd"),), (window_start, window_end));
     }
 
     pub fn set_max_farmers(env: Env, max: u32) {
@@ -319,7 +401,7 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::MaxFarmers, &max);
         env.events()
-            .publish((symbol_short!("max_farmers_updated"),), (max,));
+            .publish((symbol_short!("maxf_upd"),), (max,));
     }
 
     pub fn set_premium(env: Env, premium: i128) {
@@ -332,7 +414,7 @@ impl InsurancePool {
         updated.premium = premium;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("premium_updated"),), (premium,));
+            .publish((symbol_short!("prem_upd"),), (premium,));
     }
 
     pub fn set_coverage(env: Env, coverage: i128) {
@@ -345,7 +427,7 @@ impl InsurancePool {
         updated.coverage = coverage;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("coverage_updated"),), (coverage,));
+            .publish((symbol_short!("cov_upd"),), (coverage,));
     }
 
     pub fn set_min_liquidity(env: Env, min_liquidity: i128) {
@@ -358,7 +440,7 @@ impl InsurancePool {
         updated.min_liquidity = min_liquidity;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("min_liquidity_updated"),), (min_liquidity,));
+            .publish((symbol_short!("minliq_u"),), (min_liquidity,));
     }
 
     pub fn set_payout_window(env: Env, payout_window: u64) {
@@ -368,7 +450,7 @@ impl InsurancePool {
         updated.payout_window = payout_window;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("payout_window_updated"),), (payout_window,));
+            .publish((symbol_short!("payout_u"),), (payout_window,));
     }
 
     pub fn set_claim_window(env: Env, claim_window: u64) {
@@ -378,7 +460,7 @@ impl InsurancePool {
         updated.claim_window = claim_window;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("claim_window_set"),), (claim_window,));
+            .publish((symbol_short!("claim_win"),), (claim_window,));
     }
 
     pub fn get_claim_window(env: Env) -> u64 {
@@ -398,7 +480,10 @@ impl InsurancePool {
     }
 
     pub fn get_provider_deposit(env: Env, provider: Address) -> i128 {
-        provider_balance(env, provider)
+        env.storage()
+            .persistent()
+            .get::<DataKey, i128>(&DataKey::Provider(provider))
+            .unwrap_or(0)
     }
 
     pub fn is_reading_stale(env: Env, timestamp: u64) -> bool {
@@ -412,7 +497,7 @@ impl InsurancePool {
 
     pub fn enforce_oracle_cooldown(env: Env, oracle: Address) -> bool {
         let last = last_oracle_submit(&env, &oracle);
-        let cooldown = get_oracle_cooldown(&env);
+        let cooldown = Self::get_oracle_cooldown(&env);
         let now = env.ledger().timestamp();
         if cooldown > 0 && last > 0 && now.saturating_sub(last) < cooldown {
             return false;
@@ -434,7 +519,7 @@ impl InsurancePool {
         updated.threshold = threshold;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("oracle_threshold_set"),), (threshold,));
+            .publish((symbol_short!("orac_thr"),), (threshold,));
     }
 
     pub fn is_enrollment_open(env: Env) -> bool {
@@ -462,11 +547,11 @@ impl InsurancePool {
     }
 
     pub fn get_farmer_record(env: Env, farmer: Address) -> Option<CoverageRecord> {
-        farmer_status(env, farmer)
+        Self::farmer_status(env, farmer)
     }
 
     pub fn get_provider_record(env: Env, provider: Address) -> i128 {
-        provider_balance(env, provider)
+        Self::provider_balance(env, provider)
     }
 
     pub fn get_config_summary(env: Env) -> (Address, Address, Address, i128, i128, i128, u64, u64) {
@@ -493,7 +578,7 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::DepositFeeBps, &(fee as u32));
         env.events()
-            .publish((symbol_short!("enrollment_fee_set"),), (fee,));
+            .publish((symbol_short!("enrol_fee"),), (fee,));
     }
 
     pub fn distribute_premiums(env: Env) {
@@ -509,7 +594,7 @@ impl InsurancePool {
         if share > 0 {
             token.transfer(&env.current_contract_address(), &config.admin, &share);
             env.events()
-                .publish((symbol_short!("premiums_distributed"),), (config.admin, share));
+                .publish((symbol_short!("prem_dist"),), (config.admin, share));
         }
     }
 
@@ -517,17 +602,17 @@ impl InsurancePool {
         0
     }
 
-    pub fn enroll(env: Env, farmer: Address) {
+    pub fn set_region(env: Env, region: Symbol) {
         let existing = get_config(&env);
         existing.admin.require_auth();
         let mut updated = existing;
-        updated.region = region;
+        updated.region = region.clone();
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("region_updated"),), (region,));
+            .publish((symbol_short!("reg_upd"),), (region,));
     }
 
-    pub fn set_metric(env: Env, metric: Symbol) {
+    pub fn set_metric(env: Env, metric: u32) {
         let existing = get_config(&env);
         existing.admin.require_auth();
         if metric != METRIC_RAINFALL {
@@ -537,7 +622,7 @@ impl InsurancePool {
         updated.metric = metric;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("metric_updated"),), (metric,));
+            .publish((symbol_short!("met_upd"),), (metric,));
     }
 
     pub fn set_location(env: Env, latitude: i64, longitude: i64) {
@@ -554,7 +639,7 @@ impl InsurancePool {
         updated.longitude = longitude;
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("location_updated"),), (latitude, longitude));
+            .publish((symbol_short!("loc_upd"),), (latitude, longitude));
     }
 
     pub fn activate_pool(env: Env) {
@@ -589,7 +674,7 @@ impl InsurancePool {
         }
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("oracle_revoked"),), (oracle,));
+            .publish((symbol_short!("orac_rev"),), (oracle,));
     }
 
     pub fn emergency_withdraw_all(env: Env) {
@@ -605,7 +690,7 @@ impl InsurancePool {
         }
         token.transfer(&env.current_contract_address(), &config.admin, &balance);
         env.events()
-            .publish((symbol_short!("emergency_withdraw_all"),), (config.admin, balance));
+            .publish((symbol_short!("ewd_all"),), (config.admin, balance));
     }
 
     pub fn get_last_reading_id(env: Env) -> u64 {
@@ -614,13 +699,13 @@ impl InsurancePool {
 
     pub fn get_providers(env: Env) -> Vec<Address> {
         // Return providers with nonzero balances
-        let mut result = Vec::new();
+        let mut result = Vec::<Address>::new(&env);
         // providers stored individually; scan not supported directly, return empty placeholder
         result
     }
 
     pub fn get_farmers(env: Env) -> Vec<Address> {
-        let mut result = Vec::new();
+        let mut result = Vec::<Address>::new(&env);
         result
     }
 
@@ -643,7 +728,7 @@ impl InsurancePool {
         updated.admin = new_admin.clone();
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("emergency_admin_set"),), (new_admin,));
+            .publish((symbol_short!("eadmin"),), (new_admin,));
     }
 
     pub fn get_emergency_admin(env: Env) -> Address {
@@ -655,17 +740,17 @@ impl InsurancePool {
         config.admin.require_auth();
         env.storage()
             .persistent()
-            .set(&DataKey::Provider(provider), &true);
+            .set(&DataKey::Provider(provider.clone()), &true);
         env.events()
-            .publish((symbol_short!("provider_added"),), (provider,));
+            .publish((symbol_short!("prov_add"),), (provider,));
     }
 
     pub fn remove_liquidity_provider(env: Env, provider: Address) {
         let config = get_config(&env);
         config.admin.require_auth();
-        env.storage().persistent().remove(&DataKey::Provider(provider));
+        env.storage().persistent().remove(&DataKey::Provider(provider.clone()));
         env.events()
-            .publish((symbol_short!("provider_removed"),), (provider,));
+            .publish((symbol_short!("prov_rem"),), (provider,));
     }
 
     pub fn is_provider_authorized(env: Env, provider: Address) -> bool {
@@ -685,7 +770,7 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::DepositFeeBps, &fee_bps);
         env.events()
-            .publish((symbol_short!("deposit_fee_set"),), (fee_bps,));
+            .publish((symbol_short!("depfee"),), (fee_bps,));
     }
 
     pub fn get_deposit_fee(env: Env) -> u32 {
@@ -702,7 +787,7 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::LiquidityLockPeriod, &period);
         env.events()
-            .publish((symbol_short!("liquidity_lock_set"),), (period,));
+            .publish((symbol_short!("liq_lock"),), (period,));
     }
 
     pub fn set_oracle_cooldown(env: Env, cooldown: u64) {
@@ -712,14 +797,7 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::OracleCooldownSec, &cooldown);
         env.events()
-            .publish((symbol_short!("oracle_cooldown_set"),), (cooldown,));
-    }
-
-    pub fn get_oracle_cooldown(env: Env) -> u64 {
-        env.storage()
-            .persistent()
-            .get(&DataKey::OracleCooldownSec)
-            .unwrap_or(0)
+            .publish((symbol_short!("orac_cool"),), (cooldown,));
     }
 
     pub fn get_claimable_amount(env: Env, farmer: Address) -> i128 {
@@ -757,7 +835,7 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::PausedReason, &reason);
         env.events()
-            .publish((symbol_short!("pause_reason_set"),), (reason,));
+            .publish((symbol_short!("pause_rsn"),), (reason,));
     }
 
     pub fn get_paused_reason(env: Env) -> Option<Symbol> {
@@ -768,15 +846,16 @@ impl InsurancePool {
 
     pub fn transfer_ownership(env: Env, new_admin: Address) {
         let existing = get_config(&env);
-        existing.admin.require_auth();
-        if new_admin == existing.admin {
+        let admin = existing.admin.clone();
+        admin.require_auth();
+        if new_admin == admin {
             panic_with_error!(env, PoolError::InvalidParameter);
         }
         let mut updated = existing;
         updated.admin = new_admin.clone();
         env.storage().instance().set(&DataKey::Config, &updated);
         env.events()
-            .publish((symbol_short!("ownership_transferred"),), (existing.admin, new_admin));
+            .publish((symbol_short!("ownertr"),), (admin, new_admin));
     }
 
     pub fn enroll(env: Env, farmer: Address) {
@@ -784,64 +863,9 @@ impl InsurancePool {
             panic_with_error!(env, PoolError::ReentrancyDetected);
         }
         set_guard(&env, true);
-        let result = enroll_inner(&env, farmer);
+        let result = Self::enroll_inner(&env, farmer);
         set_guard(&env, false);
         result;
-    }
-
-    fn enroll_inner(env: Env, farmer: Address) {
-        farmer.require_auth();
-        let config = get_config(&env);
-        if is_paused(&env) {
-            panic_with_error!(env, PoolError::Paused);
-        }
-        if get_state(&env) != PoolState::Active {
-            panic_with_error!(env, PoolError::PoolNotActive);
-        }
-        if is_blacklisted(&env, &farmer) {
-            panic_with_error!(env, PoolError::Blacklisted);
-        }
-        if farmer_count(&env) >= max_farmers(&env) {
-            panic_with_error!(env, PoolError::PoolAtCapacity);
-        }
-        if env
-            .storage()
-            .persistent()
-            .has(&DataKey::Farmer(farmer.clone()))
-        {
-            panic_with_error!(env, PoolError::AlreadyEnrolled);
-        }
-
-        let next_liability = (farmer_count(&env) as i128 + 1) * config.coverage;
-        let token = TokenClient::new(&env, &config.token);
-        if token.balance(&env.current_contract_address()) < next_liability {
-            panic_with_error!(env, PoolError::PoolInsolvent);
-        }
-
-        token.transfer(&farmer, &env.current_contract_address(), &config.premium);
-
-        let record = CoverageRecord {
-            enrolled_at: env.ledger().timestamp(),
-            premium_paid: config.premium,
-            claimed: false,
-            payout_amount: 0,
-        };
-        env.storage()
-            .persistent()
-            .set(&DataKey::Farmer(farmer.clone()), &record);
-        env.storage()
-            .persistent()
-            .set(&DataKey::FarmerEnrolledAt(&farmer), &env.ledger().timestamp());
-        env.storage()
-            .persistent()
-            .set(&DataKey::FarmerCount, &(farmer_count(&env) + 1));
-        env.storage().persistent().set(
-            &DataKey::TotalPremiums,
-            &(total_premiums(&env) + config.premium),
-        );
-
-        env.events()
-            .publish((symbol_short!("enrolled"),), (farmer, config.premium));
     }
 
     pub fn claim_payout(env: Env, farmer: Address) {
@@ -891,7 +915,7 @@ impl InsurancePool {
         let payout = if balance >= outstanding {
             config.coverage
         } else if balance > 0 {
-            let proportional = (balance * config.coverage) / outstanding
+            let proportional = (balance * config.coverage) / outstanding;
             if proportional == 0 {
                 1i128
             } else {
@@ -964,7 +988,7 @@ impl InsurancePool {
         );
         env.storage()
             .persistent()
-            .set(&DataKey::LastDeposit(&provider), &env.ledger().timestamp());
+            .set(&DataKey::LastDeposit(provider.clone()), &env.ledger().timestamp());
 
         env.events()
             .publish((symbol_short!("deposit"),), (provider, amount));
@@ -1049,7 +1073,7 @@ impl InsurancePool {
         oracle.require_auth();
         env.storage()
             .persistent()
-            .set(&DataKey::LastOracleSubmit(&oracle), &env.ledger().timestamp());
+            .set(&DataKey::LastOracleSubmit(oracle.clone()), &env.ledger().timestamp());
 
         let now = env.ledger().timestamp();
         if timestamp > now {
@@ -1169,17 +1193,6 @@ impl InsurancePool {
 
     pub fn paused(env: Env) -> bool {
         is_paused(&env)
-    }
-
-    pub fn farmer_status(env: Env, farmer: Address) -> Option<CoverageRecord> {
-        env.storage().persistent().get(&DataKey::Farmer(farmer))
-    }
-
-    pub fn provider_balance(env: Env, provider: Address) -> i128 {
-        env.storage()
-            .persistent()
-            .get::<DataKey, i128>(&DataKey::Provider(provider))
-            .unwrap_or(0)
     }
 
     pub fn oracle_a(env: Env) -> Address {
@@ -1334,9 +1347,24 @@ impl InsurancePool {
         crate::storage::max_farmers(&env)
     }
 
-    pub fn config_read(env: Env) -> (Address, Address, Address, Address, Symbol, i64, i64, u32, i128, i128, i128, u64, u64, i128, u64, i128) {
+    pub fn config_parties(env: Env) -> (Address, Address, Address, Address) {
         let c = get_config(&env);
-        (c.admin, c.oracle_a, c.oracle_b, c.token, c.region, c.latitude, c.longitude, c.metric, c.threshold, c.premium, c.coverage, c.window_start, c.window_end, c.min_liquidity, c.payout_window, c.tolerance)
+        (c.admin, c.oracle_a, c.oracle_b, c.token)
+    }
+
+    pub fn config_terms(env: Env) -> (i128, i128, i128, u64, u64) {
+        let c = get_config(&env);
+        (c.premium, c.coverage, c.threshold, c.window_start, c.window_end)
+    }
+
+    pub fn config_limits(env: Env) -> (i128, u64, u64, i128) {
+        let c = get_config(&env);
+        (c.min_liquidity, c.payout_window, c.claim_window, c.tolerance)
+    }
+
+    pub fn config_geo(env: Env) -> (Symbol, i64, i64, u32) {
+        let c = get_config(&env);
+        (c.region, c.latitude, c.longitude, c.metric)
     }
 
     pub fn triggered_at(env: Env) -> u64 {
@@ -1394,7 +1422,7 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::MaxClaimPerFarmer, &max);
         env.events()
-            .publish((symbol_short!("max_claim_set"),), (max,));
+            .publish((symbol_short!("max_clam"),), (max,));
     }
 
     pub fn get_max_claim_per_farmer(env: Env) -> i128 {
@@ -1419,7 +1447,7 @@ impl InsurancePool {
         env.storage().persistent().set(&DataKey::FarmerCount, &0u32);
         env.storage().persistent().set(&DataKey::ClaimedCount, &0u32);
         env.events()
-            .publish((symbol_short!("pool_reset"),), ());
+            .publish((symbol_short!("poolrst"),), ());
     }
 
     pub fn archive_pool(env: Env) {
@@ -1429,7 +1457,7 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::Archived, &true);
         env.events()
-            .publish((symbol_short!("pool_archived"),), ());
+            .publish((symbol_short!("pool_arc"),), ());
     }
 
     pub fn get_archived(env: Env) -> bool {
@@ -1446,7 +1474,7 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::OracleReward, &reward);
         env.events()
-            .publish((symbol_short!("oracle_reward_set"),), (reward,));
+            .publish((symbol_short!("orac_rew"),), (reward,));
     }
 
     pub fn get_oracle_reward(env: Env) -> i128 {
@@ -1466,19 +1494,15 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::SlashedOracle(oracle.clone()), &amount);
         env.events()
-            .publish((symbol_short!("oracle_slashed"),), (oracle, amount));
+            .publish((symbol_short!("orac_sla"),), (oracle, amount));
     }
 
     pub fn get_slashed_oracles(env: Env) -> u32 {
         0
     }
 
-    pub fn get_pool_age(env: Env) -> u64 {
-        env.ledger().timestamp().saturating_sub(crate::storage::contract_created_at(&env))
-    }
-
     pub fn is_pool_mature(env: Env, min_age: u64) -> bool {
-        get_pool_age(env) >= min_age
+        Self::get_pool_age(env) >= min_age
     }
 
     pub fn set_maintenance_mode(env: Env, enabled: bool) {
@@ -1488,7 +1512,7 @@ impl InsurancePool {
             .persistent()
             .set(&DataKey::MaintenanceMode, &enabled);
         env.events()
-            .publish((symbol_short!("maintenance_mode_set"),), (enabled,));
+            .publish((symbol_short!("maint_ms"),), (enabled,));
     }
 
     pub fn get_maintenance_mode(env: Env) -> bool {
@@ -1503,7 +1527,7 @@ impl InsurancePool {
         config.admin.require_auth();
         env.storage().persistent().set(&DataKey::Paused, &true);
         env.events()
-            .publish((symbol_short!("emergency_stop"),), (config.admin,));
+            .publish((symbol_short!("estop"),), (config.admin,));
     }
 
     pub fn resume_all(env: Env) {

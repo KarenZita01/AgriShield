@@ -1,5 +1,5 @@
 export function deriveReadingId(timestamp) {
-  if (Number.isNaN(timestamp) || timestamp <= 0) {
+  if (Number.isNaN(timestamp) || timestamp < 0) {
     throw new Error(`Invalid timestamp for reading id: ${timestamp}`)
   }
   return BigInt(timestamp)
@@ -29,10 +29,12 @@ export function computeDiff(a, b) {
 }
 
 export function isWithinTolerance(diff, tolerance) {
-  if (!Number.isFinite(diff) || !Number.isFinite(tolerance)) {
+  const d = Number(diff)
+  const t = Number(tolerance)
+  if (!Number.isFinite(d) || !Number.isFinite(t)) {
     throw new Error(`isWithinTolerance: inputs must be finite`)
   }
-  return diff <= tolerance
+  return d <= t
 }
 
 export function checkAgreement(oracleA, oracleB, tolerance) {
