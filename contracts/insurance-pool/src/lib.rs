@@ -1168,6 +1168,8 @@ impl InsurancePool {
     }
 
     pub fn paused(env: Env) -> bool {
+        is_paused(&env)
+    }
 
     pub fn farmer_status(env: Env, farmer: Address) -> Option<CoverageRecord> {
         env.storage().persistent().get(&DataKey::Farmer(farmer))
@@ -1368,6 +1370,149 @@ impl InsurancePool {
             last_reading_id(&env),
             held * 10_000 / crate::storage::liability(&env).max(1),
         )
+    }
+
+    pub fn get_pause_timestamp(env: Env) -> u64 {
+        env.storage()
+            .persistent()
+            .get(&DataKey::PausedAt)
+            .unwrap_or(0)
+    }
+
+    pub fn set_pause_timestamp(env: Env, ts: u64) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage()
+            .persistent()
+            .set(&DataKey::PausedAt, &ts);
+    }
+
+    pub fn set_max_claim_per_farmer(env: Env, max: i128) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        env.storage()
+            .persistent()
+            .set(&DataKey::MaxClaimPerFarmer, &max);
+        env.events()
+            .publish((symbol_short!("max_claim_set"),), (max,));
+    }
+
+    pub fn get_max_claim_per_farmer(env: Env) -> i128 {
+        env.storage()
+            .persistent()
+            .get(&DataKey::MaxClaimPerFarmer)
+            .unwrap_or(get_config(&env).coverage)
+    }
+
+    pub fn reset_pool(env: Env) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        if get_state(&env) != PoolState::Closed {
+            panic_with_error!(env, PoolError::PoolNotClosed);
+        }
+        env.storage().instance().set(&DataKey::State, &PoolState::Active.to_u32());
+        env.storage().persistent().set(&DataKey::Paused, &false);
+        env.storage().persistent().set(&DataKey::TotalLiquidity, &0i128);
+        env.storage().persistent().set(&DataKey::TotalPremiums, &0i128);
+        env.storage().persistent().set(&DataKey::TotalPayouts, &0i128);
+        env.storage().persistent().set(&DataKey::TotalClaimed, &0i128);
+        env.storage().persistent().set(&DataKey::FarmerCount, &0u32);
+        env.storage().persistent().set(&DataKey::ClaimedCount, &0u32);
+        env.events()
+            .publish((symbol_short!("pool_reset"),), ());
+    }
+
+    pub fn archive_pool(env: Env) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage()
+            .persistent()
+            .set(&DataKey::Archived, &true);
+        env.events()
+            .publish((symbol_short!("pool_archived"),), ());
+    }
+
+    pub fn get_archived(env: Env) -> bool {
+        env.storage()
+            .persistent()
+            .get(&DataKey::Archived)
+            .unwrap_or(false)
+    }
+
+    pub fn set_oracle_reward(env: Env, reward: i128) {
+        let existing = get_config(&env);
+        existing.admin.require_auth();
+        env.storage()
+            .persistent()
+            .set(&DataKey::OracleReward, &reward);
+        env.events()
+            .publish((symbol_short!("oracle_reward_set"),), (reward,));
+    }
+
+    pub fn get_oracle_reward(env: Env) -> i128 {
+        env.storage()
+            .persistent()
+            .get(&DataKey::OracleReward)
+            .unwrap_or(0)
+    }
+
+    pub fn slash_oracle(env: Env, oracle: Address, amount: i128) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        if amount <= 0 {
+            panic_with_error!(env, PoolError::InvalidParameter);
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::SlashedOracle(oracle.clone()), &amount);
+        env.events()
+            .publish((symbol_short!("oracle_slashed"),), (oracle, amount));
+    }
+
+    pub fn get_slashed_oracles(env: Env) -> u32 {
+        0
+    }
+
+    pub fn get_pool_age(env: Env) -> u64 {
+        env.ledger().timestamp().saturating_sub(crate::storage::contract_created_at(&env))
+    }
+
+    pub fn is_pool_mature(env: Env, min_age: u64) -> bool {
+        get_pool_age(env) >= min_age
+    }
+
+    pub fn set_maintenance_mode(env: Env, enabled: bool) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage()
+            .persistent()
+            .set(&DataKey::MaintenanceMode, &enabled);
+        env.events()
+            .publish((symbol_short!("maintenance_mode_set"),), (enabled,));
+    }
+
+    pub fn get_maintenance_mode(env: Env) -> bool {
+        env.storage()
+            .persistent()
+            .get(&DataKey::MaintenanceMode)
+            .unwrap_or(false)
+    }
+
+    pub fn emergency_stop_all(env: Env) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        env.storage().persistent().set(&DataKey::Paused, &true);
+        env.events()
+            .publish((symbol_short!("emergency_stop"),), (config.admin,));
+    }
+
+    pub fn resume_all(env: Env) {
+        let config = get_config(&env);
+        config.admin.require_auth();
+        set_state(&env, PoolState::Active);
+        env.storage().persistent().set(&DataKey::Paused, &false);
+        env.events()
+            .publish((symbol_short!("resumed"),), ());
     }
 }
 
